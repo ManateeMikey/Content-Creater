@@ -7,15 +7,17 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		CD6276922B2E53E000C4BD29 /* Entries.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = CD6276902B2E53E000C4BD29 /* Entries.xcdatamodeld */; };
 		CDC12F9F2B2E447000522CC5 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDC12F9E2B2E447000522CC5 /* AppDelegate.swift */; };
 		CDC12FA12B2E447000522CC5 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDC12FA02B2E447000522CC5 /* SceneDelegate.swift */; };
-		CDC12FA32B2E447000522CC5 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDC12FA22B2E447000522CC5 /* ViewController.swift */; };
 		CDC12FA62B2E447000522CC5 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = CDC12FA42B2E447000522CC5 /* Main.storyboard */; };
 		CDC12FA82B2E447100522CC5 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CDC12FA72B2E447100522CC5 /* Assets.xcassets */; };
 		CDC12FAB2B2E447100522CC5 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = CDC12FA92B2E447100522CC5 /* LaunchScreen.storyboard */; };
 		CDC12FB62B2E447100522CC5 /* Content_CreaterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDC12FB52B2E447100522CC5 /* Content_CreaterTests.swift */; };
 		CDC12FC02B2E447100522CC5 /* Content_CreaterUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDC12FBF2B2E447100522CC5 /* Content_CreaterUITests.swift */; };
 		CDC12FC22B2E447100522CC5 /* Content_CreaterUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDC12FC12B2E447100522CC5 /* Content_CreaterUITestsLaunchTests.swift */; };
+		CDC12FDC2B2E477800522CC5 /* WelcomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDC12FDB2B2E477800522CC5 /* WelcomeViewController.swift */; };
+		CDC12FDE2B2E47BD00522CC5 /* AllEntriesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDC12FDD2B2E47BD00522CC5 /* AllEntriesViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -36,10 +38,10 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		CD6276912B2E53E000C4BD29 /* Entries.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Entries.xcdatamodel; sourceTree = "<group>"; };
 		CDC12F9B2B2E447000522CC5 /* Content Creater.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Content Creater.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		CDC12F9E2B2E447000522CC5 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		CDC12FA02B2E447000522CC5 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
-		CDC12FA22B2E447000522CC5 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		CDC12FA52B2E447000522CC5 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		CDC12FA72B2E447100522CC5 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		CDC12FAA2B2E447100522CC5 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -49,6 +51,8 @@
 		CDC12FBB2B2E447100522CC5 /* Content CreaterUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Content CreaterUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		CDC12FBF2B2E447100522CC5 /* Content_CreaterUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Content_CreaterUITests.swift; sourceTree = "<group>"; };
 		CDC12FC12B2E447100522CC5 /* Content_CreaterUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Content_CreaterUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		CDC12FDB2B2E477800522CC5 /* WelcomeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeViewController.swift; sourceTree = "<group>"; };
+		CDC12FDD2B2E47BD00522CC5 /* AllEntriesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllEntriesViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -79,6 +83,7 @@
 		CDC12F922B2E447000522CC5 = {
 			isa = PBXGroup;
 			children = (
+				CDC12FCF2B2E448E00522CC5 /* DataModel */,
 				CDC12F9D2B2E447000522CC5 /* Content Creater */,
 				CDC12FB42B2E447100522CC5 /* Content CreaterTests */,
 				CDC12FBE2B2E447100522CC5 /* Content CreaterUITests */,
@@ -101,11 +106,13 @@
 			children = (
 				CDC12F9E2B2E447000522CC5 /* AppDelegate.swift */,
 				CDC12FA02B2E447000522CC5 /* SceneDelegate.swift */,
-				CDC12FA22B2E447000522CC5 /* ViewController.swift */,
+				CDC12FDB2B2E477800522CC5 /* WelcomeViewController.swift */,
 				CDC12FA42B2E447000522CC5 /* Main.storyboard */,
 				CDC12FA72B2E447100522CC5 /* Assets.xcassets */,
 				CDC12FA92B2E447100522CC5 /* LaunchScreen.storyboard */,
 				CDC12FAC2B2E447100522CC5 /* Info.plist */,
+				CDC12FDD2B2E47BD00522CC5 /* AllEntriesViewController.swift */,
+				CD6276902B2E53E000C4BD29 /* Entries.xcdatamodeld */,
 			);
 			path = "Content Creater";
 			sourceTree = "<group>";
@@ -125,6 +132,13 @@
 				CDC12FC12B2E447100522CC5 /* Content_CreaterUITestsLaunchTests.swift */,
 			);
 			path = "Content CreaterUITests";
+			sourceTree = "<group>";
+		};
+		CDC12FCF2B2E448E00522CC5 /* DataModel */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = DataModel;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -258,7 +272,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CDC12FA32B2E447000522CC5 /* ViewController.swift in Sources */,
+				CDC12FDE2B2E47BD00522CC5 /* AllEntriesViewController.swift in Sources */,
+				CD6276922B2E53E000C4BD29 /* Entries.xcdatamodeld in Sources */,
+				CDC12FDC2B2E477800522CC5 /* WelcomeViewController.swift in Sources */,
 				CDC12F9F2B2E447000522CC5 /* AppDelegate.swift in Sources */,
 				CDC12FA12B2E447000522CC5 /* SceneDelegate.swift in Sources */,
 			);
@@ -607,6 +623,19 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCVersionGroup section */
+		CD6276902B2E53E000C4BD29 /* Entries.xcdatamodeld */ = {
+			isa = XCVersionGroup;
+			children = (
+				CD6276912B2E53E000C4BD29 /* Entries.xcdatamodel */,
+			);
+			currentVersion = CD6276912B2E53E000C4BD29 /* Entries.xcdatamodel */;
+			path = Entries.xcdatamodeld;
+			sourceTree = "<group>";
+			versionGroupType = wrapper.xcdatamodel;
+		};
+/* End XCVersionGroup section */
 	};
 	rootObject = CDC12F932B2E447000522CC5 /* Project object */;
 }
