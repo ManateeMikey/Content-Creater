@@ -101,7 +101,7 @@ class WelcomeViewController: UIViewController {
             self?.saveNewEntry(with: alert.textFields?.first?.text)
         }
         
-        submitButton.setValue("New Entry", forKey: "title")
+        submitButton.setValue("Save", forKey: "title")
         
         alert.addAction(submitButton)
         present(alert, animated: true, completion: nil)
@@ -134,14 +134,20 @@ class WelcomeViewController: UIViewController {
 
       func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
           let cell = tableView.dequeueReusableCell(withIdentifier: entryCellIdentifier, for: indexPath)
-
+          let defaultValue = ""
           cell.backgroundColor = .clear
           cell.textLabel?.backgroundColor = .clear
 
-          if let journalEntry = items?[indexPath.row] {
+          if let journalEntry = items?[indexPath.row],
+             let timestamp = journalEntry.timestamp {
+
+              let dateFormatter = DateFormatter()
+              dateFormatter.dateFormat = "yyyy-MM-dd"
+              let dateString = dateFormatter.string(from: timestamp)
+
               cell.textLabel?.numberOfLines = 0
               cell.textLabel?.lineBreakMode = .byWordWrapping
-              cell.textLabel?.text = journalEntry.body
+              cell.textLabel?.text = "\(dateString)\n\n\(journalEntry.body ?? defaultValue)"
               cell.textLabel?.textAlignment = .center
 
               cell.textLabel?.font = UIFont.systemFont(ofSize: 26)
