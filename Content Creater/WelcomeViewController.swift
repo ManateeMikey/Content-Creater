@@ -8,12 +8,14 @@ import UIKit
 import CoreData
 //import RevenueCat
 
+
 class WelcomeViewController: UIViewController {
     
     @IBOutlet weak var displayView: UITableView!
     var randomEntries: [JournalEntry] = []
     var currentRandomEntryIndex = 0
     var displayRandomEntryWorkItem: DispatchWorkItem?
+    var confettiLayer: CAEmitterLayer!
     
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
@@ -25,12 +27,73 @@ class WelcomeViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        
         setupTableView()
         //        setupBookImageView()
         
         fetchRandomEntry()
+        
+        setupConfettiAnimation()
     }
     
+    private func setupConfettiAnimation() {
+        confettiLayer = CAEmitterLayer()
+        confettiLayer.emitterPosition = CGPoint(x: view.bounds.width / 2, y: -50)
+        confettiLayer.emitterSize = CGSize(width: view.bounds.width, height: view.bounds.height)
+        confettiLayer.emitterShape = .line
+        confettiLayer.renderMode = .additive
+
+        let confettiCell = makeConfettiCell()
+        confettiLayer.emitterCells = [confettiCell]
+        
+        // Set initial birth rate to zero
+        confettiLayer.birthRate = 0
+
+        view.layer.addSublayer(confettiLayer)
+    }
+
+    private func makeConfettiCell() -> CAEmitterCell {
+        let cell = CAEmitterCell()
+        cell.birthRate = 4
+        cell.lifetime = 2.0
+        cell.velocity = 400
+        cell.velocityRange = 200
+        cell.emissionLongitude = .pi
+        cell.scale = 0.2
+        cell.scaleRange = 0.1
+
+        // Generate random RGB values
+        let randomRed = CGFloat.random(in: 0.5...1.0)
+        let randomGreen = CGFloat.random(in: 0.7...1.0)
+        let randomBlue = CGFloat.random(in: 0.7...1.0)
+
+        // Use the generated RGB values for the color
+        let randomColor = UIColor(red: randomRed, green: randomGreen, blue: randomBlue, alpha: 1.0).cgColor
+
+        cell.color = randomColor
+
+        // Create a circular confetti particle
+        let particleSize: CGFloat = 15
+        let particleLayer = CALayer()
+        particleLayer.bounds = CGRect(x: 0, y: 0, width: particleSize, height: particleSize)
+        particleLayer.cornerRadius = particleSize / 2
+        particleLayer.backgroundColor = UIColor.white.cgColor
+
+        cell.contents = image(from: particleLayer)
+
+        return cell
+    }
+
+    
+    
+    private func image(from layer: CALayer) -> CGImage? {
+        let renderer = UIGraphicsImageRenderer(size: layer.bounds.size)
+        let image = renderer.image { context in
+            layer.render(in: context.cgContext)
+        }
+        return image.cgImage
+    }
+
     private func setupTableView() {
         displayView.dataSource = self
         displayView.delegate = self
@@ -90,6 +153,7 @@ class WelcomeViewController: UIViewController {
     
     //Create entry
     @IBAction func addEntry(_ sender: Any) {
+
         
         let alert = UIAlertController(title: "New Entry", message: "What made you happy/content today? Try to be as specific as you can!", preferredStyle: .alert)
         alert.addTextField()
@@ -99,13 +163,42 @@ class WelcomeViewController: UIViewController {
         
         let submitButton = UIAlertAction(title: "Add", style: .default) { [weak self] (action) in
             self?.saveNewEntry(with: alert.textFields?.first?.text)
+            self?.animateConfetti()
         }
         
         submitButton.setValue("Save", forKey: "title")
         
         alert.addAction(submitButton)
         present(alert, animated: true, completion: nil)
+        
+        saveNewEntry(with: alert.textFields?.first?.text)
     }
+    
+    private func animateConfetti() {
+        // Set birth rate to trigger the confetti animation
+        confettiLayer.birthRate = 40
+
+        let burst = CABasicAnimation(keyPath: "emitterCells.confetti.birthRate")
+        burst.fromValue = 80
+        burst.toValue = 0
+        burst.duration = 2
+        burst.timingFunction = CAMediaTimingFunction(name: .easeOut)
+
+        // After the burst animation completes, set birth rate back to zero
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+            self.confettiLayer.birthRate = 0
+        }
+
+        // Create a new emitter cell with random colors
+        let newConfettiCell = self.makeConfettiCell()
+        self.confettiLayer.emitterCells = [newConfettiCell]
+
+        // Remove all previous animations to ensure a clean state
+        self.confettiLayer.removeAllAnimations()
+
+        confettiLayer.add(burst, forKey: "burst")
+    }
+    
     
     private func saveNewEntry(with text: String?) {
         guard let text = text, !text.isEmpty else { return }

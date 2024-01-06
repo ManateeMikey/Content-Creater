@@ -213,12 +213,12 @@ extension AllEntriesViewController: UITableViewDelegate, UITableViewDataSource {
         
         cell.textLabel?.numberOfLines = 0
         
-        if indexPath.row == 0 {
-            cell.alpha = 0
-            UIView.animate(withDuration: 1.0) {
-                cell.alpha = 1
-            }
-        }
+//        if indexPath.row == 0 {
+//            cell.alpha = 0
+//            UIView.animate(withDuration: 1.0) {
+//                cell.alpha = 1
+//            }
+//        }
         return cell
     }
         
