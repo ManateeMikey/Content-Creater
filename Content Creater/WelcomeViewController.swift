@@ -107,15 +107,30 @@ class WelcomeViewController: UIViewController {
             let allEntries = try context.fetch(JournalEntry.fetchRequest())
             randomEntries = allEntries.shuffled()
             currentRandomEntryIndex = 0
-            
+
             if let entry = randomEntries.first {
                 displayRandomEntry(entry)
             } else {
-                print("There are no entries - try adding some :)")
+                displayDefaultMessage()
             }
         } catch {
             print("Unable to fetch random entries")
         }
+    }
+    
+    func displayDefaultMessage() {
+        let defaultMessage = "Try making a New Entry!"
+        items = []
+        displayView.reloadData()
+
+        let defaultLabel = UILabel()
+        defaultLabel.text = defaultMessage
+        defaultLabel.textAlignment = .center
+        defaultLabel.textColor = textColor
+        defaultLabel.font = UIFont.systemFont(ofSize: 20)
+        
+        displayView.backgroundView = defaultLabel
+        displayView.separatorStyle = .none
     }
     
     func displayRandomEntry(_ entry: JournalEntry) {
@@ -142,8 +157,7 @@ class WelcomeViewController: UIViewController {
                 if let entry = self?.randomEntries.first {
                     self?.displayRandomEntry(entry)
                 } else {
-                    self?.items = []
-                    self?.displayView.reloadData()
+                    self?.displayDefaultMessage()
                 }
             }
         }
@@ -213,6 +227,11 @@ class WelcomeViewController: UIViewController {
         do {
             try context.save()
             fetchRandomEntry()
+
+            // Reset backgroundView to nil to remove the default message
+            displayView.backgroundView = nil
+            // Set separatorStyle back to default
+            displayView.separatorStyle = .none
         } catch {
             print("Unable to save new entry")
         }
