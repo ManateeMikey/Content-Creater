@@ -10,6 +10,12 @@ import CoreData
 
 class AllEntriesViewController: UIViewController {
     
+    let dateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter
+    }()
+    
     @IBOutlet weak var tableView: UITableView!
     
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
@@ -18,6 +24,9 @@ class AllEntriesViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        tableView.separatorStyle = .singleLine
+        tableView.separatorColor = UIColor.lightGray
         
         tableView.dataSource = self
         tableView.delegate = self
@@ -42,19 +51,17 @@ class AllEntriesViewController: UIViewController {
         
     
     func fetchEntries() {
-        // Fetch data from Core Data and sort it in descending order by timestamp
         let fetchRequest: NSFetchRequest<JournalEntry> = JournalEntry.fetchRequest()
         let sortDescriptor = NSSortDescriptor(key: "timestamp", ascending: false)
         fetchRequest.sortDescriptors = [sortDescriptor]
-        
+
         do {
             self.items = try context.fetch(fetchRequest)
-            
+
             DispatchQueue.main.async {
                 self.tableView.reloadData()
             }
         } catch {
-            // Handle the error
             print("Unable to fetch entries")
         }
     }
@@ -87,43 +94,47 @@ class AllEntriesViewController: UIViewController {
     
     //Change Entry
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        
-        //Selected Entry
         let entry = self.items![indexPath.row]
-        
-        //Create alert
+
         let alert = UIAlertController(title: "Edit Entry", message: "Change this entry", preferredStyle: .alert)
-        alert.addTextField()
-        
-        let textfield = alert.textFields![0]
-        textfield.text = entry.body
-        
-        //Configure button handler
-        let saveButton = UIAlertAction(title: "Save", style: .default) { (action) in
-            
-            //Get textfield for the alert
-            let textfield = alert.textFields![0]
-            
-            //Edit name property of person object
-            entry.body = textfield.text
-            
-            //Save the data
-            do {
-                try self.context.save()
-            }
-            catch {
-                print("Unable to change entry")
-            }
-            //Re-fetch the data
-            self.fetchEntries()
+        alert.addTextField { textField in
+            textField.placeholder = "Body"
+            textField.text = entry.body
+        }
+
+        // Use a UIDatePicker as the input view for the timestamp text field
+        let datePicker = UIDatePicker()
+        datePicker.datePickerMode = .date
+        alert.addTextField { textField in
+            textField.placeholder = "Timestamp"
+            textField.text = self.dateFormatter.string(from: entry.timestamp!)
+            textField.inputView = datePicker
         }
         
-        //Add button
+        let saveButton = UIAlertAction(title: "Save", style: .default) { [weak self] _ in
+            guard let self = self else { return }
+
+            if let bodyTextField = alert.textFields?.first,
+               let body = bodyTextField.text {
+
+                // Extract the date from the date picker
+                let timestamp = datePicker.date
+
+                entry.body = body
+                entry.timestamp = timestamp
+
+                do {
+                    try self.context.save()
+                    self.fetchEntries()
+                } catch {
+                    print("Unable to save changes")
+                }
+            }
+        }
+
         alert.addAction(saveButton)
-        
-        //Show alert
         self.present(alert, animated: true, completion: nil)
-    }
+     }
     
     @IBAction func Instructions(_ sender: Any) {
         // Display "Tap to Edit" and "Swipe left to Delete" messages using labels
@@ -192,36 +203,26 @@ extension AllEntriesViewController: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
-        let cell = tableView.dequeueReusableCell(withIdentifier: "EntryCell", for:indexPath)
-        
-        // Set the background color of the cell and the label to clear
+        let cell = tableView.dequeueReusableCell(withIdentifier: "EntryCell", for: indexPath)
+
         cell.backgroundColor = .clear
         cell.textLabel?.backgroundColor = .clear
 
-        
-        //TODO: Get entries from array and set the label
-        let journalEntry  = self.items![indexPath.row]
-        cell.textLabel?.text = journalEntry.body
-//        let dateFormatter = DateFormatter()
-//        dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
-        
-        cell.textLabel?.text = journalEntry.body
+        let journalEntry = self.items![indexPath.row]
+
+        // Use the dateFormatter to format the timestamp without hours, minutes, and seconds
+        let formattedTimestamp = dateFormatter.string(from: journalEntry.timestamp!)
+
+        cell.textLabel?.text = "\(journalEntry.body ?? "")\n\n\(formattedTimestamp)"
         cell.textLabel?.textColor = UIColor(hex: 0xffffff)
-        cell.textLabel?.font = UIFont.systemFont(ofSize: 20) // Adjust the font size as needed
-        //cell.textLabel?.font = UIFont.systemFont(ofSize: 18, weight: .heavy)
-        //cell.textLabel?.text = dateFormatter.string(from: journalEntry.timestamp!)
-        
+        cell.textLabel?.font = UIFont.systemFont(ofSize: 20)
         cell.textLabel?.numberOfLines = 0
         
-//        if indexPath.row == 0 {
-//            cell.alpha = 0
-//            UIView.animate(withDuration: 1.0) {
-//                cell.alpha = 1
-//            }
-//        }
+        // Align the timestamp line to the center
+        cell.textLabel?.textAlignment = .center
+        
         return cell
     }
-        
 }
 
 

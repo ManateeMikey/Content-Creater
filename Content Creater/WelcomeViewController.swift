@@ -221,7 +221,18 @@ class WelcomeViewController: UIViewController {
 
         let newEntry = JournalEntry(context: context)
         newEntry.body = text
-        newEntry.timestamp = Date()
+
+        // Get the current date
+        let currentDate = Date()
+
+        // Use Calendar to extract only the date components (year, month, day)
+        let calendar = Calendar.current
+        let dateComponents = calendar.dateComponents([.year, .month, .day], from: currentDate)
+
+        // Create a new Date object with only the date components
+        if let dateWithoutTime = calendar.date(from: dateComponents) {
+            newEntry.timestamp = dateWithoutTime
+        }
 
         do {
             try context.save()
