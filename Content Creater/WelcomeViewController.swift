@@ -189,27 +189,28 @@ class WelcomeViewController: UIViewController {
     }
     
     private func animateConfetti() {
-        // Set birth rate to trigger the confetti animation
-        confettiLayer.birthRate = 40
-
         // Create a new emitter cell with random colors
         let newConfettiCell = makeConfettiCell()
         confettiLayer.emitterCells = [newConfettiCell]
 
-        // Create a closure for the completion block
-        let completion: (Bool) -> Void = { _ in
-            // After the burst animation completes, set birth rate back to zero
-            self.confettiLayer.birthRate = 0
+        // Set birth rate to trigger the confetti animation
+        confettiLayer.birthRate = 40
+
+        // Use a DispatchWorkItem to delay setting birthRate back to zero
+        let resetBirthRateWorkItem = DispatchWorkItem { [weak self] in
+            self?.confettiLayer.birthRate = 0
 
             // Remove all previous animations to ensure a clean state
-            self.confettiLayer.removeAllAnimations()
+            self?.confettiLayer.removeAllAnimations()
         }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0, execute: resetBirthRateWorkItem)
 
         // Perform the animation using UIView.animate
         UIView.animate(withDuration: 2.0, delay: 0, options: [.curveEaseOut], animations: {
             // Define the animation changes
             self.view.layoutIfNeeded()
-        }, completion: completion)
+        }, completion: nil)
     }
     
     
