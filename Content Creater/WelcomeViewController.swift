@@ -63,9 +63,9 @@ class WelcomeViewController: UIViewController {
         cell.scaleRange = 0.1
 
         // Generate random RGB values
-        let randomRed = CGFloat.random(in: 0.5...1.0)
-        let randomGreen = CGFloat.random(in: 0.7...1.0)
-        let randomBlue = CGFloat.random(in: 0.7...1.0)
+        let randomRed = CGFloat.random(in: 0.7...1.0)
+        let randomGreen = CGFloat.random(in: 0.8...1.0)
+        let randomBlue = CGFloat.random(in: 0.8...1.0)
 
         // Use the generated RGB values for the color
         let randomColor = UIColor(red: randomRed, green: randomGreen, blue: randomBlue, alpha: 1.0).cgColor
@@ -192,25 +192,24 @@ class WelcomeViewController: UIViewController {
         // Set birth rate to trigger the confetti animation
         confettiLayer.birthRate = 40
 
-        let burst = CABasicAnimation(keyPath: "emitterCells.confetti.birthRate")
-        burst.fromValue = 80
-        burst.toValue = 0
-        burst.duration = 2
-        burst.timingFunction = CAMediaTimingFunction(name: .easeOut)
+        // Create a new emitter cell with random colors
+        let newConfettiCell = makeConfettiCell()
+        confettiLayer.emitterCells = [newConfettiCell]
 
-        // After the burst animation completes, set birth rate back to zero
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+        // Create a closure for the completion block
+        let completion: (Bool) -> Void = { _ in
+            // After the burst animation completes, set birth rate back to zero
             self.confettiLayer.birthRate = 0
+
+            // Remove all previous animations to ensure a clean state
+            self.confettiLayer.removeAllAnimations()
         }
 
-        // Create a new emitter cell with random colors
-        let newConfettiCell = self.makeConfettiCell()
-        self.confettiLayer.emitterCells = [newConfettiCell]
-
-        // Remove all previous animations to ensure a clean state
-        self.confettiLayer.removeAllAnimations()
-
-        confettiLayer.add(burst, forKey: "burst")
+        // Perform the animation using UIView.animate
+        UIView.animate(withDuration: 2.0, delay: 0, options: [.curveEaseOut], animations: {
+            // Define the animation changes
+            self.view.layoutIfNeeded()
+        }, completion: completion)
     }
     
     
