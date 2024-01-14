@@ -213,7 +213,7 @@ extension AllEntriesViewController: UITableViewDelegate, UITableViewDataSource {
         // Use the dateFormatter to format the timestamp without hours, minutes, and seconds
         let formattedTimestamp = dateFormatter.string(from: journalEntry.timestamp!)
 
-        cell.textLabel?.text = "\(journalEntry.body ?? "")\n\n\(formattedTimestamp)"
+        cell.textLabel?.text = "\(formattedTimestamp)\n\n\(journalEntry.body ?? "")"
         cell.textLabel?.textColor = UIColor(hex: 0xffffff)
         cell.textLabel?.font = UIFont.systemFont(ofSize: 20)
         cell.textLabel?.numberOfLines = 0

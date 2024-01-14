@@ -61,23 +61,32 @@ class WelcomeViewController: UIViewController {
         cell.emissionLongitude = .pi
         cell.scale = 0.2
         cell.scaleRange = 0.1
+        cell.spin = .pi * 2
+        cell.emissionRange = .pi / 4
+        
+        // Set redSpeed, greenSpeed, and blueSpeed to control color changes
+        cell.redSpeed = 50  // Adjust the values based on the desired color change rate
+        cell.greenSpeed = 50
+        cell.blueSpeed = 50
 
         // Generate random RGB values
         let randomRed = CGFloat.random(in: 0.7...1.0)
         let randomGreen = CGFloat.random(in: 0.8...1.0)
         let randomBlue = CGFloat.random(in: 0.8...1.0)
 
+        
         // Use the generated RGB values for the color
         let randomColor = UIColor(red: randomRed, green: randomGreen, blue: randomBlue, alpha: 1.0).cgColor
 
         cell.color = randomColor
 
         // Create a circular confetti particle
-        let particleSize: CGFloat = 30
+        let particleSize: CGFloat = 40
         let particleLayer = CALayer()
         particleLayer.bounds = CGRect(x: 0, y: 0, width: particleSize, height: particleSize)
         particleLayer.cornerRadius = particleSize / 2
-        particleLayer.backgroundColor = UIColor.white.cgColor
+        particleLayer.backgroundColor = randomColor
+
 
         cell.contents = image(from: particleLayer)
 
