@@ -109,6 +109,10 @@ class AllEntriesViewController: UIViewController {
             textField.placeholder = "Timestamp"
             textField.text = self.dateFormatter.string(from: entry.timestamp!)
             textField.inputView = datePicker
+
+            // Add constraints to the datePicker
+            datePicker.translatesAutoresizingMaskIntoConstraints = false
+            datePicker.heightAnchor.constraint(equalToConstant: 216.0).isActive = true // Adjust the height as needed
         }
         
         let saveButton = UIAlertAction(title: "Save", style: .default) { [weak self] _ in
