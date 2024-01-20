@@ -178,7 +178,7 @@ class WelcomeViewController: UIViewController {
     @IBAction func addEntry(_ sender: Any) {
 
         
-        let alert = UIAlertController(title: "New Entry", message: "What made you happy/content today? Try to be as specific as you can!", preferredStyle: .alert)
+        let alert = UIAlertController(title: "New Entry", message: "What made you happy/content today? It can also be a memory from before today", preferredStyle: .alert)
         alert.addTextField()
         
         let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
@@ -188,7 +188,6 @@ class WelcomeViewController: UIViewController {
             self?.saveNewEntry(with: alert.textFields?.first?.text)
             self?.animateConfetti()
         }
-        
         submitButton.setValue("Save", forKey: "title")
         
         alert.addAction(submitButton)

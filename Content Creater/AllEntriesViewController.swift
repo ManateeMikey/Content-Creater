@@ -42,6 +42,10 @@ class AllEntriesViewController: UIViewController {
         // Set rounded corners for the table view
         tableView.layer.cornerRadius = 15
         
+        // Set the delegate for the search bar
+        EntrySearch.delegate = self
+        EntrySearch.layer.cornerRadius = 15
+        EntrySearch.clipsToBounds = true
     }
     
     @objc func backButtonTapped() {
@@ -195,6 +199,11 @@ class AllEntriesViewController: UIViewController {
     @IBAction func BackButton(_ sender: Any) {
         dismiss(animated: true, completion: nil)
     }
+    
+    @IBOutlet weak var EntrySearch: UISearchBar!
+    
+    
+    
 }
 
 extension AllEntriesViewController: UITableViewDelegate, UITableViewDataSource {
@@ -242,4 +251,40 @@ extension UIColor {
 }
 
 
+extension AllEntriesViewController: UISearchBarDelegate {
     
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        filterContentForSearchText(searchText)
+    }
+
+    func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
+        searchBar.text = nil
+        searchBar.resignFirstResponder()
+        tableView.reloadData()
+    }
+    
+    // Helper method to filter entries based on search text
+    func filterContentForSearchText(_ searchText: String) {
+        if searchText.isEmpty {
+            // If search text is empty, display all entries
+            fetchEntries()
+        } else {
+            // Filter entries based on search text
+            let fetchRequest: NSFetchRequest<JournalEntry> = JournalEntry.fetchRequest()
+            let predicate = NSPredicate(format: "body CONTAINS[c] %@", searchText)
+            fetchRequest.predicate = predicate
+            let sortDescriptor = NSSortDescriptor(key: "timestamp", ascending: false)
+            fetchRequest.sortDescriptors = [sortDescriptor]
+
+            do {
+                self.items = try context.fetch(fetchRequest)
+
+                DispatchQueue.main.async {
+                    self.tableView.reloadData()
+                }
+            } catch {
+                print("Unable to fetch filtered entries")
+            }
+        }
+    }
+}

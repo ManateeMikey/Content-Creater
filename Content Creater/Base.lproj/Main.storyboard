@@ -143,16 +143,27 @@
                                     <action selector="BackButton:" destination="CHK-8v-XKh" eventType="touchUpInside" id="Wh6-o0-AiI"/>
                                 </connections>
                             </button>
+                            <searchBar opaque="NO" alpha="0.80000000000000004" contentMode="redraw" placeholder="Search for Entries..." translatesAutoresizingMaskIntoConstraints="NO" id="dKy-xt-c6l">
+                                <rect key="frame" x="40" y="119" width="313" height="56"/>
+                                <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <textInputTraits key="textInputTraits"/>
+                                <connections>
+                                    <outlet property="delegate" destination="CHK-8v-XKh" id="Dhb-i8-dq2"/>
+                                </connections>
+                            </searchBar>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="fMM-Il-HRu"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="mRh-Eu-GUJ" firstAttribute="leading" secondItem="fMM-Il-HRu" secondAttribute="leading" constant="20" id="7Jr-sa-i5a"/>
+                            <constraint firstAttribute="trailing" secondItem="dKy-xt-c6l" secondAttribute="trailing" constant="40" id="7eq-qQ-Igp"/>
                             <constraint firstItem="fMM-Il-HRu" firstAttribute="trailing" secondItem="asP-IB-XK5" secondAttribute="trailing" constant="40" id="9Vj-cH-zdo"/>
+                            <constraint firstItem="asP-IB-XK5" firstAttribute="top" secondItem="dKy-xt-c6l" secondAttribute="bottom" constant="20" id="EBx-zu-UPj"/>
                             <constraint firstItem="odR-DN-KZK" firstAttribute="top" secondItem="fMM-Il-HRu" secondAttribute="top" constant="20" id="Ee4-Sz-bAG"/>
                             <constraint firstItem="asP-IB-XK5" firstAttribute="leading" secondItem="fMM-Il-HRu" secondAttribute="leading" constant="40" id="GV7-sa-P9F"/>
                             <constraint firstItem="mRh-Eu-GUJ" firstAttribute="top" secondItem="fMM-Il-HRu" secondAttribute="top" constant="20" id="KBC-b4-o3h"/>
                             <constraint firstItem="fMM-Il-HRu" firstAttribute="trailing" secondItem="odR-DN-KZK" secondAttribute="trailing" constant="20" id="OMa-85-ihf"/>
+                            <constraint firstItem="dKy-xt-c6l" firstAttribute="leading" secondItem="fMM-Il-HRu" secondAttribute="leading" constant="40" id="Sex-cC-nbl"/>
                             <constraint firstAttribute="bottom" secondItem="HQ3-eb-yAf" secondAttribute="bottom" id="Vds-h3-zFh"/>
                             <constraint firstItem="asP-IB-XK5" firstAttribute="top" secondItem="odR-DN-KZK" secondAttribute="bottom" constant="125" id="Y94-jt-e8K"/>
                             <constraint firstItem="HQ3-eb-yAf" firstAttribute="leading" secondItem="Tjn-Xy-Y6n" secondAttribute="leading" id="hG0-DS-F4S"/>
@@ -163,6 +174,7 @@
                     </view>
                     <navigationItem key="navigationItem" id="sLm-NH-fTX"/>
                     <connections>
+                        <outlet property="EntrySearch" destination="dKy-xt-c6l" id="xAa-oQ-w2h"/>
                         <outlet property="tableView" destination="asP-IB-XK5" id="GvM-cy-MmH"/>
                     </connections>
                 </viewController>
