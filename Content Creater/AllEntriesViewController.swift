@@ -84,7 +84,7 @@ class AllEntriesViewController: UIViewController, UIImagePickerControllerDelegat
         imagePickerController.sourceType = .photoLibrary
         present(imagePickerController, animated: true, completion: nil)
     }
-    
+
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         if let selectedImage = info[UIImagePickerController.InfoKey.originalImage] as? UIImage {
             // Save the selected photo to UserDefaults
@@ -92,13 +92,18 @@ class AllEntriesViewController: UIViewController, UIImagePickerControllerDelegat
                 UserDefaults.standard.set(imageData, forKey: "backgroundPhoto")
                 print("Custom Image Data Saved to UserDefaults: \(imageData)")
             }
-            
+
             // Update the selected image
             self.selectedImage = selectedImage
-            
+
             // Set the background image
             setBackgroundImage(selectedImage)
+        } else if let defaultBackgroundImage = UIImage(named: "HistoryBackground") {
+            // If the user did not choose a custom photo, use the "HistoryBackground" asset as a fallback
+            UserDefaults.standard.removeObject(forKey: "backgroundPhoto") // Remove any previously saved custom photo
+            setBackgroundImage(defaultBackgroundImage)
         }
+
         picker.dismiss(animated: true, completion: nil)
     }
     
