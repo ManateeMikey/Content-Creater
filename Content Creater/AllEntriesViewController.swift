@@ -8,7 +8,10 @@
 import UIKit
 import CoreData
 
-class AllEntriesViewController: UIViewController {
+class AllEntriesViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+    
+    var backgroundImage: UIImageView!
+    var selectedImage: UIImage? // Track the selected image
     
     let dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
@@ -24,7 +27,7 @@ class AllEntriesViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+        	
         tableView.separatorStyle = .singleLine
         tableView.separatorColor = UIColor.lightGray
         
@@ -46,7 +49,65 @@ class AllEntriesViewController: UIViewController {
         EntrySearch.delegate = self
         EntrySearch.layer.cornerRadius = 15
         EntrySearch.clipsToBounds = true
+        
+        // Add a gesture recognizer to allow the user to select a photo
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(selectBackgroundPhoto))
+        view.addGestureRecognizer(tapGesture)
+        
+        // Initialize the UIImageView for the background image
+        backgroundImage = UIImageView(frame: view.bounds)
+        backgroundImage.contentMode = .scaleAspectFill
+        backgroundImage.clipsToBounds = true
+        view.insertSubview(backgroundImage, at: 0)
+        
+        // Load the selected image or the default background image
+        if let customImage = getCustomBackgroundImage() {
+            setBackgroundImage(customImage)
+        } else if let customImage = getCustomBackgroundImage() {
+            setBackgroundImage(customImage)
+        } else if let defaultBackgroundImage = UIImage(named: "HistoryBackground") {
+            setBackgroundImage(defaultBackgroundImage)
+        }
     }
+    
+    @objc func selectBackgroundPhoto() {
+        let imagePickerController = UIImagePickerController()
+        imagePickerController.delegate = self
+        imagePickerController.sourceType = .photoLibrary
+        present(imagePickerController, animated: true, completion: nil)
+    }
+    
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        if let selectedImage = info[UIImagePickerController.InfoKey.originalImage] as? UIImage {
+            // Save the selected photo to UserDefaults
+            if let imageData = selectedImage.jpegData(compressionQuality: 1.0) {
+                UserDefaults.standard.set(imageData, forKey: "backgroundPhoto")
+                print("Custom Image Data Saved to UserDefaults: \(imageData)")
+            }
+            
+            // Update the selected image
+            self.selectedImage = selectedImage
+            
+            // Set the background image
+            setBackgroundImage(selectedImage)
+        }
+        picker.dismiss(animated: true, completion: nil)
+    }
+    
+    // Helper method to get the selected image from UserDefaults
+    private func getCustomBackgroundImage() -> UIImage? {
+        if let imageData = UserDefaults.standard.data(forKey: "backgroundPhoto"),
+           let customImage = UIImage(data: imageData) {
+            return customImage
+        }
+        return nil
+    }
+    
+    // Helper method to set the background image
+    private func setBackgroundImage(_ image: UIImage) {
+        backgroundImage.image = image
+    }
+    
     
     @objc func backButtonTapped() {
         // Handle the back button tap here (e.g., pop the view controller)
@@ -147,13 +208,13 @@ class AllEntriesViewController: UIViewController {
     @IBAction func Instructions(_ sender: Any) {
         // Display "Tap to Edit" and "Swipe left to Delete" messages using labels
         let helpLabel = UILabel()
-        helpLabel.text = "Tap to Edit, Swipe to Delete"
+        helpLabel.text = "Tap to Edit Entries/Background, Swipe to Delete"
         helpLabel.font = UIFont.systemFont(ofSize: 20)
         helpLabel.textAlignment = .center
         helpLabel.textColor = UIColor.white
         
         let returnLabel = UILabel()
-        returnLabel.text = "Tap Arrow to Exit"
+        returnLabel.text = "Tap Left Arrow to Exit"
         returnLabel.font = UIFont.systemFont(ofSize: 20)
         returnLabel.textAlignment = .center
         returnLabel.textColor = UIColor.white

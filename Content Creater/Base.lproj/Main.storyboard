@@ -94,11 +94,6 @@
                         <rect key="frame" x="0.0" y="0.0" width="393" height="842"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="HistoryBackground" translatesAutoresizingMaskIntoConstraints="NO" id="HQ3-eb-yAf">
-                                <rect key="frame" x="0.0" y="0.0" width="393" height="842"/>
-                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <color key="tintColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                            </imageView>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="odR-DN-KZK">
                                 <rect key="frame" x="323" y="20" width="50" height="50"/>
                                 <constraints>
@@ -164,12 +159,8 @@
                             <constraint firstItem="mRh-Eu-GUJ" firstAttribute="top" secondItem="fMM-Il-HRu" secondAttribute="top" constant="20" id="KBC-b4-o3h"/>
                             <constraint firstItem="fMM-Il-HRu" firstAttribute="trailing" secondItem="odR-DN-KZK" secondAttribute="trailing" constant="20" id="OMa-85-ihf"/>
                             <constraint firstItem="dKy-xt-c6l" firstAttribute="leading" secondItem="fMM-Il-HRu" secondAttribute="leading" constant="40" id="Sex-cC-nbl"/>
-                            <constraint firstAttribute="bottom" secondItem="HQ3-eb-yAf" secondAttribute="bottom" id="Vds-h3-zFh"/>
                             <constraint firstItem="asP-IB-XK5" firstAttribute="top" secondItem="odR-DN-KZK" secondAttribute="bottom" constant="125" id="Y94-jt-e8K"/>
-                            <constraint firstItem="HQ3-eb-yAf" firstAttribute="leading" secondItem="Tjn-Xy-Y6n" secondAttribute="leading" id="hG0-DS-F4S"/>
-                            <constraint firstAttribute="trailing" secondItem="HQ3-eb-yAf" secondAttribute="trailing" id="qlN-EU-su5"/>
                             <constraint firstItem="fMM-Il-HRu" firstAttribute="bottom" secondItem="asP-IB-XK5" secondAttribute="bottom" constant="40" id="x7G-yV-mR6"/>
-                            <constraint firstItem="HQ3-eb-yAf" firstAttribute="top" secondItem="Tjn-Xy-Y6n" secondAttribute="top" id="zA7-xy-5CD"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="sLm-NH-fTX"/>
@@ -184,7 +175,6 @@
         </scene>
     </scenes>
     <resources>
-        <image name="HistoryBackground" width="745" height="1511"/>
         <image name="MainBackground" width="683" height="1531"/>
         <image name="arrowshape.left" catalog="system" width="128" height="104"/>
         <image name="hourglass" catalog="system" width="103" height="128"/>
