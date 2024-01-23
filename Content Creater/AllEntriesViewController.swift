@@ -50,9 +50,17 @@ class AllEntriesViewController: UIViewController, UIImagePickerControllerDelegat
         EntrySearch.layer.cornerRadius = 15
         EntrySearch.clipsToBounds = true
         
-        // Add a gesture recognizer to allow the user to select a photo
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(selectBackgroundPhoto))
-        view.addGestureRecognizer(tapGesture)
+        let selectBackgroundButton = UIButton(type: .system)
+        selectBackgroundButton.setTitle("Select Background", for: .normal)
+        selectBackgroundButton.addTarget(self, action: #selector(selectBackgroundPhoto), for: .touchUpInside)
+        view.addSubview(selectBackgroundButton)
+
+        // Set constraints for the button at the middle-top
+        selectBackgroundButton.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            selectBackgroundButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            selectBackgroundButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20)
+        ])
         
         // Initialize the UIImageView for the background image
         backgroundImage = UIImageView(frame: view.bounds)
