@@ -42,16 +42,16 @@ class WelcomeViewController: UIViewController {
         confettiLayer.emitterSize = CGSize(width: view.bounds.width, height: view.bounds.height)
         confettiLayer.emitterShape = .line
         confettiLayer.renderMode = .additive
-
+        
         let confettiCell = makeConfettiCell()
         confettiLayer.emitterCells = [confettiCell]
         
         // Set initial birth rate to zero
         confettiLayer.birthRate = 0
-
+        
         view.layer.addSublayer(confettiLayer)
     }
-
+    
     private func makeConfettiCell() -> CAEmitterCell {
         let cell = CAEmitterCell()
         cell.birthRate = 4
@@ -68,31 +68,31 @@ class WelcomeViewController: UIViewController {
         cell.redSpeed = 50  // Adjust the values based on the desired color change rate
         cell.greenSpeed = 50
         cell.blueSpeed = 50
-
+        
         // Generate random RGB values
         let randomRed = CGFloat.random(in: 0.7...1.0)
         let randomGreen = CGFloat.random(in: 0.8...1.0)
         let randomBlue = CGFloat.random(in: 0.8...1.0)
-
+        
         
         // Use the generated RGB values for the color
         let randomColor = UIColor(red: randomRed, green: randomGreen, blue: randomBlue, alpha: 1.0).cgColor
-
+        
         cell.color = randomColor
-
+        
         // Create a circular confetti particle
         let particleSize: CGFloat = 40
         let particleLayer = CALayer()
         particleLayer.bounds = CGRect(x: 0, y: 0, width: particleSize, height: particleSize)
         particleLayer.cornerRadius = particleSize / 2
         particleLayer.backgroundColor = randomColor
-
-
+        
+        
         cell.contents = image(from: particleLayer)
-
+        
         return cell
     }
-
+    
     
     
     private func image(from layer: CALayer) -> CGImage? {
@@ -102,7 +102,7 @@ class WelcomeViewController: UIViewController {
         }
         return image.cgImage
     }
-
+    
     private func setupTableView() {
         displayView.dataSource = self
         displayView.delegate = self
@@ -116,7 +116,7 @@ class WelcomeViewController: UIViewController {
             let allEntries = try context.fetch(JournalEntry.fetchRequest())
             randomEntries = allEntries.shuffled()
             currentRandomEntryIndex = 0
-
+            
             if let entry = randomEntries.first {
                 displayRandomEntry(entry)
             } else {
@@ -131,7 +131,7 @@ class WelcomeViewController: UIViewController {
         let defaultMessage = "Try making a New Entry!"
         items = []
         displayView.reloadData()
-
+        
         let defaultLabel = UILabel()
         defaultLabel.text = defaultMessage
         defaultLabel.textAlignment = .center
@@ -145,16 +145,16 @@ class WelcomeViewController: UIViewController {
     func displayRandomEntry(_ entry: JournalEntry) {
         items = [entry]
         displayView.reloadData()
-
+        
         currentRandomEntryIndex += 1
-
+        
         let fadeInAnimation = CATransition()
         fadeInAnimation.duration = 2.0
         fadeInAnimation.type = .fade
         fadeInAnimation.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
-
+        
         displayView.layer.add(fadeInAnimation, forKey: "fadeAnimation")
-
+        
         displayRandomEntryWorkItem = DispatchWorkItem { [weak self] in
             if let currentIndex = self?.currentRandomEntryIndex, currentIndex < self?.randomEntries.count ?? 0 {
                 let nextEntry = self?.randomEntries[currentIndex]
@@ -162,7 +162,7 @@ class WelcomeViewController: UIViewController {
             } else {
                 self?.randomEntries.shuffle()
                 self?.currentRandomEntryIndex = 0
-
+                
                 if let entry = self?.randomEntries.first {
                     self?.displayRandomEntry(entry)
                 } else {
@@ -170,50 +170,71 @@ class WelcomeViewController: UIViewController {
                 }
             }
         }
-
+        
         DispatchQueue.main.asyncAfter(deadline: .now() + 5.0, execute: displayRandomEntryWorkItem!)
     }
     
     //Create entry
     @IBAction func addEntry(_ sender: Any) {
-
-        
         let alert = UIAlertController(title: "New Entry", message: "What made you happy/content today? It can also be a memory from before today", preferredStyle: .alert)
-        alert.addTextField()
+        
+        alert.addTextField { textField in
+            textField.placeholder = "Entry text"
+        }
+        
+        alert.addTextField { textField in
+            textField.placeholder = "Date (optional)"
+            // Set today's date as the default value
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "yyyy-MM-dd"
+            textField.text = dateFormatter.string(from: Date())
+            // Set the input view to a UIDatePicker
+            let datePicker = UIDatePicker()
+            datePicker.datePickerMode = .date
+            textField.inputView = datePicker
+        }
         
         let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
         alert.addAction(cancelAction)
         
-        let submitButton = UIAlertAction(title: "Add", style: .default) { [weak self] (action) in
-            self?.saveNewEntry(with: alert.textFields?.first?.text)
+        let submitButton = UIAlertAction(title: "Add", style: .default) { [weak self] _ in
+            // Retrieve text from the first text field (entry text)
+            let entryText = alert.textFields?.first?.text
+            // Retrieve date from the second text field (date)
+            let dateString = alert.textFields?.last?.text
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "yyyy-MM-dd"
+            let date = dateFormatter.date(from: dateString ?? "")
+            
+            // Call the method to save the new entry
+            self?.saveNewEntry(with: entryText, date: date)
+            // Animate confetti
             self?.animateConfetti()
         }
         submitButton.setValue("Save", forKey: "title")
-        
         alert.addAction(submitButton)
-        present(alert, animated: true, completion: nil)
         
-        saveNewEntry(with: alert.textFields?.first?.text)
+        present(alert, animated: true, completion: nil)
     }
     
     private func animateConfetti() {
         // Create a new emitter cell with random colors
         let newConfettiCell = makeConfettiCell()
         confettiLayer.emitterCells = [newConfettiCell]
-
+        
         // Set birth rate to trigger the confetti animation
         confettiLayer.birthRate = 40
-
+        
         // Use a DispatchWorkItem to delay setting birthRate back to zero
         let resetBirthRateWorkItem = DispatchWorkItem { [weak self] in
             self?.confettiLayer.birthRate = 0
-
+            
             // Remove all previous animations to ensure a clean state
             self?.confettiLayer.removeAllAnimations()
         }
-
+        
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.0, execute: resetBirthRateWorkItem)
-
+        
         // Perform the animation using UIView.animate
         UIView.animate(withDuration: 2.0, delay: 0, options: [.curveEaseOut], animations: {
             // Define the animation changes
@@ -221,32 +242,20 @@ class WelcomeViewController: UIViewController {
         }, completion: nil)
     }
     
-    
-    private func saveNewEntry(with text: String?) {
+    private func saveNewEntry(with text: String?, date: Date?) {
         guard let text = text, !text.isEmpty else { return }
-
+        
         // Cancel the existing asyncAfter task
         displayRandomEntryWorkItem?.cancel()
-
+        
         let newEntry = JournalEntry(context: context)
         newEntry.body = text
-
-        // Get the current date
-        let currentDate = Date()
-
-        // Use Calendar to extract only the date components (year, month, day)
-        let calendar = Calendar.current
-        let dateComponents = calendar.dateComponents([.year, .month, .day], from: currentDate)
-
-        // Create a new Date object with only the date components
-        if let dateWithoutTime = calendar.date(from: dateComponents) {
-            newEntry.timestamp = dateWithoutTime
-        }
-
+        newEntry.timestamp = date ?? Date() // Use provided date or today's date if nil
+        
         do {
             try context.save()
             fetchRandomEntry()
-
+            
             // Reset backgroundView to nil to remove the default message
             displayView.backgroundView = nil
             // Set separatorStyle back to default
