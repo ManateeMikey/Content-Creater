@@ -181,34 +181,44 @@ class AllEntriesViewController: UIViewController, UIImagePickerControllerDelegat
             textField.text = entry.body
         }
 
-        // Use a UIDatePicker as the input view for the timestamp text field
-        let datePicker = UIDatePicker()
-        datePicker.datePickerMode = .date
-        datePicker.date = entry.timestamp ?? Date()  // Set the initial date
+//        // Use a UIDatePicker as the input view for the timestamp text field
+//        let datePicker = UIDatePicker()
+//        datePicker.datePickerMode = .date
+//        datePicker.date = entry.timestamp ?? Date()  // Set the initial date
 
         alert.addTextField { textField in
             textField.placeholder = "Timestamp"
             textField.text = self.dateFormatter.string(from: entry.timestamp ?? Date())
-            textField.inputView = datePicker
+//            textField.inputView = datePicker
         }
 
         let saveButton = UIAlertAction(title: "Save", style: .default) { [weak self] _ in
             guard let self = self else { return }
 
             if let bodyTextField = alert.textFields?.first,
-                let body = bodyTextField.text {
+               let timestampTextField = alert.textFields?.last,
+               let body = bodyTextField.text,
+               let timestampText = timestampTextField.text {
 
-                // Extract the date from the date picker
-                let timestamp = datePicker.date
+                let dateFormatter = DateFormatter()
+                dateFormatter.dateFormat = "yyyy-MM-dd"  // Adjust the format based on your timestamp format
 
-                entry.body = body
-                entry.timestamp = timestamp
+                if let timestamp = dateFormatter.date(from: timestampText) {
+                    entry.body = body
+                    entry.timestamp = timestamp
 
-                do {
-                    try self.context.save()
-                    self.fetchEntries()
-                } catch {
-                    print("Unable to save changes")
+                    do {
+                        try self.context.save()
+                        self.fetchEntries()
+                    } catch {
+                        print("Unable to save changes")
+                    }
+                } else {
+                    // Invalid timestamp format, show an error alert
+                    let errorAlert = UIAlertController(title: "Invalid Date Format", message: "Please enter a valid date in the format 'yyyy-MM-dd'", preferredStyle: .alert)
+                    let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
+                    errorAlert.addAction(okAction)
+                    self.present(errorAlert, animated: true, completion: nil)
                 }
             }
         }
