@@ -15,7 +15,9 @@ class WelcomeViewController: UIViewController {
     var randomEntries: [JournalEntry] = []
     var currentRandomEntryIndex = 0
     var displayRandomEntryWorkItem: DispatchWorkItem?
-    var confettiLayer: CAEmitterLayer!
+    var confettiLayer1: CAEmitterLayer!
+    var confettiLayer2: CAEmitterLayer!
+    var confettiLayer3: CAEmitterLayer!
     
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
@@ -36,20 +38,35 @@ class WelcomeViewController: UIViewController {
         setupConfettiAnimation()
     }
     
+    
+    
     private func setupConfettiAnimation() {
-        confettiLayer = CAEmitterLayer()
-        confettiLayer.emitterPosition = CGPoint(x: view.bounds.width / 2, y: -50)
-        confettiLayer.emitterSize = CGSize(width: view.bounds.width, height: view.bounds.height)
+        confettiLayer1 = createConfettiLayer()
+        confettiLayer2 = createConfettiLayer()
+        confettiLayer3 = createConfettiLayer()
+
+        confettiLayer1.emitterPosition = CGPoint(x: view.bounds.width / 4, y: -50)
+        confettiLayer2.emitterPosition = CGPoint(x: view.bounds.width / 2, y: -50)
+        confettiLayer3.emitterPosition = CGPoint(x: view.bounds.width * 3 / 4, y: -50)
+
+        view.layer.addSublayer(confettiLayer1)
+        view.layer.addSublayer(confettiLayer2)
+        view.layer.addSublayer(confettiLayer3)
+    }
+
+    private func createConfettiLayer() -> CAEmitterLayer {
+        let confettiLayer = CAEmitterLayer()
+        confettiLayer.emitterSize = CGSize(width: view.bounds.width / 4, height: view.bounds.height)
         confettiLayer.emitterShape = .line
         confettiLayer.renderMode = .additive
-        
+
         let confettiCell = makeConfettiCell()
         confettiLayer.emitterCells = [confettiCell]
-        
+
         // Set initial birth rate to zero
         confettiLayer.birthRate = 0
-        
-        view.layer.addSublayer(confettiLayer)
+
+        return confettiLayer
     }
     
     private func makeConfettiCell() -> CAEmitterCell {
@@ -63,37 +80,51 @@ class WelcomeViewController: UIViewController {
         cell.scaleRange = 0.1
         cell.spin = .pi * 2
         cell.emissionRange = .pi / 4
-        
-        // Set redSpeed, greenSpeed, and blueSpeed to control color changes
-        cell.redSpeed = 50  // Adjust the values based on the desired color change rate
-        cell.greenSpeed = 50
-        cell.blueSpeed = 50
-        
-        // Generate random RGB values
-        let randomRed = CGFloat.random(in: 0.7...1.0)
-        let randomGreen = CGFloat.random(in: 0.8...1.0)
-        let randomBlue = CGFloat.random(in: 0.8...1.0)
-        
-        
-        // Use the generated RGB values for the color
-        let randomColor = UIColor(red: randomRed, green: randomGreen, blue: randomBlue, alpha: 1.0).cgColor
-        
+
+        // Array of three different colors with random RGB values
+        let colors: [UIColor] = [
+            randomColor(),
+            randomColor(),
+            randomColor()
+        ]
+
+        // Randomly select a color
+        let randomColor = colors.randomElement()?.cgColor ?? UIColor.white.cgColor
+
         cell.color = randomColor
-        
-        // Create a circular confetti particle
-        let particleSize: CGFloat = 40
+
+        // Create a rectangular confetti particle
+        let particleSize = CGSize(width: 40, height: 20)
         let particleLayer = CALayer()
-        particleLayer.bounds = CGRect(x: 0, y: 0, width: particleSize, height: particleSize)
-        particleLayer.cornerRadius = particleSize / 2
+        particleLayer.bounds = CGRect(origin: .zero, size: particleSize)
         particleLayer.backgroundColor = randomColor
-        
-        
+
         cell.contents = image(from: particleLayer)
-        
+
         return cell
     }
-    
-    
+
+    private func randomColor() -> UIColor {
+        let brightnessConstant: CGFloat = 3
+
+        // Generate random values
+        let randomRed = CGFloat.random(in: 0.85...1.0)
+        let randomGreen = CGFloat.random(in: 0.85...1.0)
+        let randomBlue = CGFloat.random(in: 0.85...1.0)
+
+        // Normalize the sum to ensure a certain brightness
+        let sum = randomRed + randomGreen + randomBlue
+        let scaleFactor = brightnessConstant / sum
+
+        let normalizedRed = randomRed * scaleFactor
+        let normalizedGreen = randomGreen * scaleFactor
+        let normalizedBlue = randomBlue * scaleFactor
+
+        // Use normalizedRed, normalizedGreen, and normalizedBlue in your color creation
+        let randomColor = UIColor(red: normalizedRed, green: normalizedGreen, blue: normalizedBlue, alpha: 1.0)
+
+        return UIColor(red: randomRed, green: randomGreen, blue: randomBlue, alpha: 1.0)
+    }
     
     private func image(from layer: CALayer) -> CGImage? {
         let renderer = UIGraphicsImageRenderer(size: layer.bounds.size)
@@ -176,7 +207,7 @@ class WelcomeViewController: UIViewController {
     
     //Create entry
     @IBAction func addEntry(_ sender: Any) {
-        let alert = UIAlertController(title: "New Entry", message: "What made you happy/content today? It can also be a memory from before today", preferredStyle: .alert)
+        let alert = UIAlertController(title: "New Entry", message: "Which memory made you happy/content today?", preferredStyle: .alert)
         
         alert.addTextField { textField in
             textField.placeholder = "Entry text"
@@ -218,24 +249,35 @@ class WelcomeViewController: UIViewController {
     }
     
     private func animateConfetti() {
-        // Create a new emitter cell with random colors
-        let newConfettiCell = makeConfettiCell()
-        confettiLayer.emitterCells = [newConfettiCell]
-        
-        // Set birth rate to trigger the confetti animation
-        confettiLayer.birthRate = 40
-        
+        // Create a new emitter cell with random colors for each layer
+        let newConfettiCell1 = makeConfettiCell()
+        let newConfettiCell2 = makeConfettiCell()
+        let newConfettiCell3 = makeConfettiCell()
+
+        confettiLayer1.emitterCells = [newConfettiCell1]
+        confettiLayer2.emitterCells = [newConfettiCell2]
+        confettiLayer3.emitterCells = [newConfettiCell3]
+
+        // Set birth rate to trigger the confetti animation for each layer
+        confettiLayer1.birthRate = 13
+        confettiLayer2.birthRate = 13
+        confettiLayer3.birthRate = 13
+
         // Use a DispatchWorkItem to delay setting birthRate back to zero
         let resetBirthRateWorkItem = DispatchWorkItem { [weak self] in
-            self?.confettiLayer.birthRate = 0
-            
+            self?.confettiLayer1.birthRate = 0
+            self?.confettiLayer2.birthRate = 0
+            self?.confettiLayer3.birthRate = 0
+
             // Remove all previous animations to ensure a clean state
-            self?.confettiLayer.removeAllAnimations()
+            self?.confettiLayer1.removeAllAnimations()
+            self?.confettiLayer2.removeAllAnimations()
+            self?.confettiLayer3.removeAllAnimations()
         }
-        
+
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.0, execute: resetBirthRateWorkItem)
-        
-        // Perform the animation using UIView.animate
+
+        // Perform the animation using UIView.animate for each layer
         UIView.animate(withDuration: 2.0, delay: 0, options: [.curveEaseOut], animations: {
             // Define the animation changes
             self.view.layoutIfNeeded()

@@ -7,6 +7,7 @@
 
 import UIKit
 import CoreData
+import UserNotifications
 
 class AllEntriesViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     
@@ -71,11 +72,11 @@ class AllEntriesViewController: UIViewController, UIImagePickerControllerDelegat
         // Load the selected image or the default background image
         if let customImage = getCustomBackgroundImage() {
             setBackgroundImage(customImage)
-        } else if let customImage = getCustomBackgroundImage() {
-            setBackgroundImage(customImage)
         } else if let defaultBackgroundImage = UIImage(named: "HistoryBackground") {
             setBackgroundImage(defaultBackgroundImage)
         }
+        
+        
     }
     
     @objc func selectBackgroundPhoto() {
@@ -183,21 +184,19 @@ class AllEntriesViewController: UIViewController, UIImagePickerControllerDelegat
         // Use a UIDatePicker as the input view for the timestamp text field
         let datePicker = UIDatePicker()
         datePicker.datePickerMode = .date
+        datePicker.date = entry.timestamp ?? Date()  // Set the initial date
+
         alert.addTextField { textField in
             textField.placeholder = "Timestamp"
-            textField.text = self.dateFormatter.string(from: entry.timestamp!)
+            textField.text = self.dateFormatter.string(from: entry.timestamp ?? Date())
             textField.inputView = datePicker
-
-            // Add constraints to the datePicker
-            datePicker.translatesAutoresizingMaskIntoConstraints = false
-            datePicker.heightAnchor.constraint(equalToConstant: 216.0).isActive = true // Adjust the height as needed
         }
-        
+
         let saveButton = UIAlertAction(title: "Save", style: .default) { [weak self] _ in
             guard let self = self else { return }
 
             if let bodyTextField = alert.textFields?.first,
-               let body = bodyTextField.text {
+                let body = bodyTextField.text {
 
                 // Extract the date from the date picker
                 let timestamp = datePicker.date
@@ -216,7 +215,7 @@ class AllEntriesViewController: UIViewController, UIImagePickerControllerDelegat
 
         alert.addAction(saveButton)
         self.present(alert, animated: true, completion: nil)
-     }
+    }
     
     @IBAction func Instructions(_ sender: Any) {
         // Display "Tap to Edit" and "Swipe left to Delete" messages using labels
