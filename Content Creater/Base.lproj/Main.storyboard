@@ -146,6 +146,15 @@
                                     <outlet property="delegate" destination="CHK-8v-XKh" id="Dhb-i8-dq2"/>
                                 </connections>
                             </searchBar>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="eDA-Kk-6Fw">
+                                <rect key="frame" x="149" y="84" width="95" height="35"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="gray" title="Schedule"/>
+                                <connections>
+                                    <action selector="notificationSettingsButtonTapped:" destination="CHK-8v-XKh" eventType="touchUpInside" id="vF3-EM-5jS"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="fMM-Il-HRu"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>

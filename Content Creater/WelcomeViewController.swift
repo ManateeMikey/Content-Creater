@@ -159,7 +159,7 @@ class WelcomeViewController: UIViewController {
     }
     
     func displayDefaultMessage() {
-        let defaultMessage = "Try making a New Entry or 3!"
+        let defaultMessage = "Try making a New Entry (or 3)!"
         items = []
         displayView.reloadData()
         
