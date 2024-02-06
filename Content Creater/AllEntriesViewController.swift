@@ -340,6 +340,11 @@ class AllEntriesViewController: UIViewController, UIImagePickerControllerDelegat
     func showTimePicker() {
         let timePicker = UIDatePicker()
         timePicker.datePickerMode = .time
+        
+        // Set the initial time of the picker to the existing schedule time, if available
+        if let notificationTime = UserDefaults.standard.object(forKey: "notificationTime") as? Date {
+            timePicker.date = notificationTime
+        }
 
         let alertController = UIAlertController(title: "Select Notification Time", message: nil, preferredStyle: .actionSheet)
         alertController.view.addSubview(timePicker)
@@ -356,7 +361,6 @@ class AllEntriesViewController: UIViewController, UIImagePickerControllerDelegat
 
         present(alertController, animated: true, completion: nil)
     }
-    
     // Add an IBAction to handle the notification settings button
     @IBAction func notificationSettingsButtonTapped(_ sender: Any) {
         let alertController = UIAlertController(title: "Notification Settings", message: nil, preferredStyle: .actionSheet)
@@ -401,9 +405,10 @@ extension AllEntriesViewController: UITableViewDelegate, UITableViewDataSource {
         let journalEntry = self.items![indexPath.row]
 
         // Use the dateFormatter to format the timestamp without hours, minutes, and seconds
-        let formattedTimestamp = dateFormatter.string(from: journalEntry.timestamp!)
+//        let formattedTimestamp = dateFormatter.string(from: journalEntry.timestamp!)
 
-        cell.textLabel?.text = "\(formattedTimestamp)\n\n\(journalEntry.body ?? "")"
+//        cell.textLabel?.text = "\(formattedTimestamp)\n\n\(journalEntry.body ?? "")"
+        cell.textLabel?.text = "\(journalEntry.body ?? "")"
         cell.textLabel?.textColor = UIColor(hex: 0xffffff)
         cell.textLabel?.font = UIFont.systemFont(ofSize: 20)
         cell.textLabel?.numberOfLines = 0

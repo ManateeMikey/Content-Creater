@@ -121,7 +121,7 @@ class WelcomeViewController: UIViewController {
         let normalizedBlue = randomBlue * scaleFactor
 
         // Use normalizedRed, normalizedGreen, and normalizedBlue in your color creation
-        let randomColor = UIColor(red: normalizedRed, green: normalizedGreen, blue: normalizedBlue, alpha: 1.0)
+        _ = UIColor(red: normalizedRed, green: normalizedGreen, blue: normalizedBlue, alpha: 1.0)
 
         return UIColor(red: randomRed, green: randomGreen, blue: randomBlue, alpha: 1.0)
     }
@@ -329,7 +329,7 @@ class WelcomeViewController: UIViewController {
 
               cell.textLabel?.numberOfLines = 0
               cell.textLabel?.lineBreakMode = .byWordWrapping
-              cell.textLabel?.text = "\(dateString)\n\n\(journalEntry.body ?? defaultValue)"
+              cell.textLabel?.text = "\(dateString)\n\(journalEntry.body ?? defaultValue)"
               cell.textLabel?.textAlignment = .center
 
               cell.textLabel?.font = UIFont.systemFont(ofSize: 26)
