@@ -20,7 +20,7 @@ class WelcomeViewController: UIViewController, UITableViewDelegate, UITableViewD
     var confettiLayer2: CAEmitterLayer!
     var confettiLayer3: CAEmitterLayer!
     
-    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+    let CDcontext = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
     var items: [JournalEntry] = []
     
@@ -30,8 +30,8 @@ class WelcomeViewController: UIViewController, UITableViewDelegate, UITableViewD
     // Add a property to store the selected photo
     var selectedPhoto: UIImage?
     
-    // Add a property to store the local identifier of the selected photo
-    var selectedPhotoLocalIdentifier: String?
+    // Add a property to store the local identifier of the selected photo, defaulting to nil
+    var selectedPhotoLocalIdentifier: String? = nil
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -40,12 +40,40 @@ class WelcomeViewController: UIViewController, UITableViewDelegate, UITableViewD
         setupTableView()
         //        setupBookImageView()
         
-        fetchRandomEntry()
+
         
         setupConfettiAnimation()
+        examineCoreDataInfo()
+        defaultBackgroundPhoto()
+        fetchRandomEntry()
     }
     
-    
+    func examineCoreDataInfo() {
+        do {
+            let fetchRequest: NSFetchRequest<JournalEntry> = JournalEntry.fetchRequest()
+            let allEntries = try CDcontext.fetch(fetchRequest)
+            
+            for entry in allEntries {
+                print("Journal Entry:")
+                print("ID: \(entry.objectID)")
+                print("Body: \(entry.body ?? "No body")")
+                print("Timestamp: \(entry.timestamp ?? Date())")
+                print("Photo Local Identifier: \(entry.photoLocalIdentifier ?? "No photo identifier")")
+                // Add more properties if needed
+                
+                // Fault the entry into memory if it is a fault
+                if entry.isFault {
+                    CDcontext.refresh(entry, mergeChanges: true)
+                }
+                
+                // Access more properties as needed
+                
+                print("----------")
+            }
+        } catch {
+            print("Error fetching JournalEntries:", error.localizedDescription)
+        }
+    }
     
     private func setupConfettiAnimation() {
         confettiLayer1 = createConfettiLayer()
@@ -151,7 +179,7 @@ class WelcomeViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     func fetchRandomEntry() {
         do {
-            let allEntries = try context.fetch(JournalEntry.fetchRequest())
+            let allEntries = try CDcontext.fetch(JournalEntry.fetchRequest())
             randomEntries = allEntries.shuffled()
             currentRandomEntryIndex = 0
             
@@ -181,23 +209,9 @@ class WelcomeViewController: UIViewController, UITableViewDelegate, UITableViewD
     }
     
     func displayRandomEntry(_ entry: JournalEntry) {
-//        // Check if items is not empty
-//        if !items.isEmpty {
-//            print("Items is not empty:", items)
-//        } else {
-//            print("Items is empty")
-//        }
-//        
-//        // Check if displayView is not nil
-//        if let displayView = displayView {
-//            print("DisplayView is not nil:", displayView)
-//        } else {
-//            print("DisplayView is nil")
-//        }
-        
         items = [entry]
         displayView.reloadData()
-        
+    
         currentRandomEntryIndex += 1
         
         let fadeInAnimation = CATransition()
@@ -210,7 +224,11 @@ class WelcomeViewController: UIViewController, UITableViewDelegate, UITableViewD
         displayRandomEntryWorkItem = DispatchWorkItem { [weak self] in
             if let currentIndex = self?.currentRandomEntryIndex, currentIndex < self?.randomEntries.count ?? 0 {
                 let nextEntry = self?.randomEntries[currentIndex]
-                self?.displayRandomEntry(nextEntry ?? JournalEntry())
+                if let CDcontext = self?.CDcontext {
+                    self?.displayRandomEntry(nextEntry ?? JournalEntry(context: CDcontext))
+                } else {
+                    // Handle the case when context is nil
+                }
             } else {
                 self?.randomEntries.shuffle()
                 self?.currentRandomEntryIndex = 0
@@ -223,17 +241,19 @@ class WelcomeViewController: UIViewController, UITableViewDelegate, UITableViewD
             }
         }
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 5.0, execute: displayRandomEntryWorkItem!)
+        if let displayRandomEntryWorkItem = displayRandomEntryWorkItem {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 5.0, execute: displayRandomEntryWorkItem)
+        }
         
-        print("Entry: \(entry)") // Add this line for debugging
+        //print("Entry: \(entry.body ?? "") \(entry.photoLocalIdentifier ?? "")")
         
-        // Update the background image if the entry has a photo
+        // Check if the photoLocalIdentifier is not nil
         if let photoLocalIdentifier = entry.photoLocalIdentifier {
+            // Set the background image if photoLocalIdentifier is not nil
             setBackgroundPhoto(with: photoLocalIdentifier)
         } else {
-            // Remove background image if no photo associated with the entry
+            // Set the default background image if photoLocalIdentifier is nil
             defaultBackgroundPhoto()
-            
         }
     }
     
@@ -260,20 +280,21 @@ class WelcomeViewController: UIViewController, UITableViewDelegate, UITableViewD
     }
     
     private func defaultBackgroundPhoto() {
-        // Load the image asset named "MainBackground"
-        if let mainBackgroundImage = UIImage(named: "MainBackground") {
-            // Set the background of the view to the image
-            let backgroundImageView = UIImageView(image: mainBackgroundImage)
-            backgroundImageView.contentMode = .scaleAspectFill
-            backgroundImageView.frame = view.bounds
-            backgroundImageView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-            // Remove any existing background views
-            view.subviews.forEach { $0.removeFromSuperview() }
-            // Add the background image view as the bottom-most subview
-            view.insertSubview(backgroundImageView, at: 0)
-        } else {
-            // If the image asset cannot be loaded, fallback to a solid color
-            view.backgroundColor = UIColor(named: "White")
+        DispatchQueue.main.async {
+            // Load the image asset named "MainBackground"
+            if let mainBackgroundImage = UIImage(named: "MainBackground") {
+                // Set the background of the view to the image
+                let backgroundImageView = UIImageView(image: mainBackgroundImage)
+                backgroundImageView.contentMode = .scaleAspectFill
+                backgroundImageView.frame = self.view.bounds
+                backgroundImageView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+                
+                // Insert the background image view behind all existing subviews
+                self.view.insertSubview(backgroundImageView, at: 0)
+            } else {
+                // If the image asset cannot be loaded, fallback to a solid color
+                self.view.backgroundColor = UIColor(named: "Pink")
+            }
         }
     }
     
@@ -305,14 +326,12 @@ class WelcomeViewController: UIViewController, UITableViewDelegate, UITableViewD
         let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
         alert.addAction(cancelAction)
         
-        let choosePhotoAction = UIAlertAction(title: "Choose Photo (Optional)", style: .default) { [weak self] _ in
-            guard let self = self else { return } // Ensure self is not nil
-            let imagePicker = UIImagePickerController()
-            imagePicker.delegate = self
-            imagePicker.sourceType = .photoLibrary
-            self.present(imagePicker, animated: true, completion: nil)
+        // Add a "No Photo" action to allow the user to skip selecting a photo
+        let noPhotoAction = UIAlertAction(title: "No Photo", style: .default) { [weak self] _ in
+            self?.selectedPhotoLocalIdentifier = nil
+            self?.presentImagePickerIfNeeded()
         }
-        alert.addAction(choosePhotoAction) // Add the action to the alert controller
+        alert.addAction(noPhotoAction)
         
         let submitButton = UIAlertAction(title: "Add", style: .default) { [weak self] _ in
             // Retrieve text from the first text field (entry text)
@@ -325,6 +344,7 @@ class WelcomeViewController: UIViewController, UITableViewDelegate, UITableViewD
             
             // Call the method to save the new entry with the selected photo local identifier
             self?.saveNewEntry(with: entryText, date: date, photoLocalIdentifier: self?.selectedPhotoLocalIdentifier)
+            print("save completed")
         }
         
         submitButton.setValue("Save", forKey: "title")
@@ -332,25 +352,56 @@ class WelcomeViewController: UIViewController, UITableViewDelegate, UITableViewD
         
         present(alert, animated: true, completion: nil)
     }
-
+    
     // Function to save a new entry
-    func saveNewEntry(with text: String?, date: Date?,photoLocalIdentifier: String?) {
-        guard let text = text, !text.isEmpty else { return }
-        
+    func saveNewEntry(with text: String?, date: Date?, photoLocalIdentifier: String?) {
+        guard let text = text, !text.isEmpty else {
+            print("Entry text is empty.")
+            return
+        }
+
+        let context = CDcontext
+
         let newEntry = JournalEntry(context: context)
         newEntry.body = text
         newEntry.timestamp = date ?? Date() // Use provided date or today's date if nil
         newEntry.photoLocalIdentifier = photoLocalIdentifier // Save the photo local identifier
-        
+
         // Save the new entry to the context
         do {
             try context.save()
-            // After saving the entry, show the image picker if a photo is to be selected
-            presentImagePickerIfNeeded()
+            print("Entry saved successfully")
+
+            // After saving the entry, set default background if no photo is selected
+            if photoLocalIdentifier == nil {
+                defaultBackgroundPhoto()
+            }
         } catch {
-            print("Unable to save new entry")
+            print("Unable to save new entry:", error.localizedDescription)
         }
     }
+
+    // Function to save a new entry
+    func saveEntry(with text: String?, date: Date?,photoLocalIdentifier: String?) {
+        let newEntry = JournalEntry(context: CDcontext)
+        newEntry.body = text
+        newEntry.timestamp = date ?? Date() // Use provided date or today's date if nil
+        newEntry.photoLocalIdentifier = photoLocalIdentifier // Save the photo local identifier
+
+        // Save the new entry to the context
+        do {
+            try CDcontext.save()
+            print("Entry saved successfully")
+            
+            // After saving the entry, set default background if no photo is selected
+            if photoLocalIdentifier == nil {
+                defaultBackgroundPhoto()
+            }
+        } catch {
+            print("Unable to save new entry:", error.localizedDescription)
+        }
+    }
+
 
     // Function to present image picker if a photo is to be selected
     func presentImagePickerIfNeeded() {
@@ -359,17 +410,42 @@ class WelcomeViewController: UIViewController, UITableViewDelegate, UITableViewD
         imagePicker.sourceType = .photoLibrary
         present(imagePicker, animated: true, completion: nil)
     }
-
+    
     // UIImagePickerControllerDelegate method to handle image selection
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         if let pickedImage = info[.originalImage] as? UIImage {
-            // Do something with the selected image if needed
-            
-            // Animate confetti
-            animateConfetti()
+            // Convert the optional Data? value to non-optional Data using optional binding
+            if let imageData = pickedImage.jpegData(compressionQuality: 1.0) {
+                // Save the picked image to the photo library
+                PHPhotoLibrary.shared().performChanges({
+                    let creationRequest = PHAssetCreationRequest.forAsset()
+                    creationRequest.addResource(with: .photo, data: imageData, options: nil)
+                }) { [weak self] success, error in
+                    if success {
+                        print("Image saved successfully to photo library.")
+                        // Retrieve the local identifier of the saved asset
+                        let asset = info[.phAsset] as? PHAsset
+                        let localIdentifier = asset?.localIdentifier
+                        
+                        // Save the entry with the selected photo local identifier
+                        self?.saveNewEntry(with: nil, date: nil, photoLocalIdentifier: localIdentifier)
+                        
+                        // Set the selected photo local identifier
+                        self?.selectedPhotoLocalIdentifier = localIdentifier
+                        
+                        // Animate confetti
+                        self?.animateConfetti()
+                    } else {
+                        print("Failed to save image to photo library:", error?.localizedDescription ?? "Unknown error")
+                    }
+                }
+            } else {
+                print("Failed to convert UIImage to Data.")
+            }
         }
         picker.dismiss(animated: true, completion: nil)
     }
+
     
     private func animateConfetti() {
         // Create a new emitter cell with random colors for each layer
@@ -413,7 +489,7 @@ class WelcomeViewController: UIViewController, UITableViewDelegate, UITableViewD
 
       func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
           let cell = tableView.dequeueReusableCell(withIdentifier: entryCellIdentifier, for: indexPath)
-          let defaultValue = ""
+//          let defaultValue = ""
           cell.backgroundColor = .clear
           cell.textLabel?.backgroundColor = .clear
           
@@ -425,9 +501,22 @@ class WelcomeViewController: UIViewController, UITableViewDelegate, UITableViewD
               
               cell.textLabel?.numberOfLines = 0
               cell.textLabel?.lineBreakMode = .byWordWrapping
-              cell.textLabel?.text = "\(dateString)\n\(journalEntry.body ?? defaultValue)\n\(journalEntry.photoLocalIdentifier ?? defaultValue)"
-              cell.textLabel?.textAlignment = .center
               
+              if let body = journalEntry.body {
+                  cell.textLabel?.text = "\(dateString)\n\(body)"
+              } else {
+                  cell.textLabel?.text = dateString // Just show the date if body is nil
+              }
+              
+              if let photoLocalIdentifier = journalEntry.photoLocalIdentifier {
+                  // Set the background image if photoLocalIdentifier is not nil
+                  setBackgroundPhoto(with: photoLocalIdentifier)
+              } else {
+                  // Set the default background image if photoLocalIdentifier is nil
+                  defaultBackgroundPhoto()
+              }
+              
+              cell.textLabel?.textAlignment = .center
               cell.textLabel?.font = UIFont.systemFont(ofSize: 26)
               cell.textLabel?.textColor = textColor
           }
