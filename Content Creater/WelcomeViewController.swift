@@ -19,7 +19,7 @@ class WelcomeViewController: UIViewController, UITableViewDelegate, UITableViewD
     var confettiLayer1: CAEmitterLayer!
     var confettiLayer2: CAEmitterLayer!
     var confettiLayer3: CAEmitterLayer!
-    
+    var imagePickerCompletion: ((String?) -> Void)?
     let CDcontext = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
     var items: [JournalEntry] = []
@@ -210,17 +210,28 @@ class WelcomeViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     func displayRandomEntry(_ entry: JournalEntry) {
         items = [entry]
-        displayView.reloadData()
-    
-        currentRandomEntryIndex += 1
+        // Check if the photoLocalIdentifier is not nil
+        if let photoLocalIdentifier = entry.photoLocalIdentifier {
+            print("Photo Local Identifier:", photoLocalIdentifier)
+            // Set the background image if photoLocalIdentifier is not nil
+            setBackgroundPhoto(with: photoLocalIdentifier)
+        } else {
+            print("Photo Local Identifier is nil")
+            // Set the default background image if photoLocalIdentifier is nil
+            defaultBackgroundPhoto()
+        }
         
+        displayView.reloadData()
+
+        currentRandomEntryIndex += 1
+
         let fadeInAnimation = CATransition()
         fadeInAnimation.duration = 2.0
         fadeInAnimation.type = .fade
         fadeInAnimation.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
-        
+
         displayView.layer.add(fadeInAnimation, forKey: "fadeAnimation")
-        
+
         displayRandomEntryWorkItem = DispatchWorkItem { [weak self] in
             if let currentIndex = self?.currentRandomEntryIndex, currentIndex < self?.randomEntries.count ?? 0 {
                 let nextEntry = self?.randomEntries[currentIndex]
@@ -232,7 +243,7 @@ class WelcomeViewController: UIViewController, UITableViewDelegate, UITableViewD
             } else {
                 self?.randomEntries.shuffle()
                 self?.currentRandomEntryIndex = 0
-                
+
                 if let entry = self?.randomEntries.first {
                     self?.displayRandomEntry(entry)
                 } else {
@@ -240,37 +251,34 @@ class WelcomeViewController: UIViewController, UITableViewDelegate, UITableViewD
                 }
             }
         }
-        
+
         if let displayRandomEntryWorkItem = displayRandomEntryWorkItem {
             DispatchQueue.main.asyncAfter(deadline: .now() + 5.0, execute: displayRandomEntryWorkItem)
         }
-        
-        //print("Entry: \(entry.body ?? "") \(entry.photoLocalIdentifier ?? "")")
-        
-        // Check if the photoLocalIdentifier is not nil
-        if let photoLocalIdentifier = entry.photoLocalIdentifier {
-            // Set the background image if photoLocalIdentifier is not nil
-            setBackgroundPhoto(with: photoLocalIdentifier)
-        } else {
-            // Set the default background image if photoLocalIdentifier is nil
-            defaultBackgroundPhoto()
-        }
+
+
     }
-    
+
     private func setBackgroundPhoto(with localIdentifier: String) {
+        print("Setting background photo with identifier:", localIdentifier)
+        // Remove the existing background image view if it exists
+        if let existingBackgroundImageView = self.view.subviews.first(where: { $0 is UIImageView }) {
+            existingBackgroundImageView.removeFromSuperview()
+        }
+
         let fetchResult = PHAsset.fetchAssets(withLocalIdentifiers: [localIdentifier], options: nil)
         if let asset = fetchResult.firstObject {
             let requestOptions = PHImageRequestOptions()
             requestOptions.deliveryMode = .highQualityFormat
             requestOptions.isNetworkAccessAllowed = true
             requestOptions.isSynchronous = false
-            
+
             PHImageManager.default().requestImage(for: asset, targetSize: view.bounds.size, contentMode: .aspectFill, options: requestOptions) { [weak self] (image, _) in
                 guard let backgroundImage = image else {
                     print("Failed to fetch image.")
                     return
                 }
-                
+
                 DispatchQueue.main.async {
                     // Set the background image
                     self?.view.backgroundColor = UIColor(patternImage: backgroundImage)
@@ -300,11 +308,6 @@ class WelcomeViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     //Create entry
     @IBAction func addEntry(_ sender: Any) {
-        presentNewEntryAlert()
-    }
-
-    // Function to present the alert for adding a new entry
-    func presentNewEntryAlert() {
         let alert = UIAlertController(title: "New Entry", message: "Which memory made you happy/content today?", preferredStyle: .alert)
         
         alert.addTextField { textField in
@@ -326,40 +329,51 @@ class WelcomeViewController: UIViewController, UITableViewDelegate, UITableViewD
         let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
         alert.addAction(cancelAction)
         
-        // Add a "No Photo" action to allow the user to skip selecting a photo
         let noPhotoAction = UIAlertAction(title: "No Photo", style: .default) { [weak self] _ in
-            self?.selectedPhotoLocalIdentifier = nil
-            self?.presentImagePickerIfNeeded()
-        }
-        alert.addAction(noPhotoAction)
-        
-        let submitButton = UIAlertAction(title: "Add", style: .default) { [weak self] _ in
-            // Retrieve text from the first text field (entry text)
+            // Retrieve text and date from the alert text fields
             let entryText = alert.textFields?.first?.text
-            // Retrieve date from the second text field (date)
             let dateString = alert.textFields?.last?.text
             let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "yyyy-MM-dd"
-            let date = dateFormatter.date(from: dateString ?? "")
+            let date = dateString.flatMap { dateFormatter.date(from: $0) }
             
-            // Call the method to save the new entry with the selected photo local identifier
-            self?.saveNewEntry(with: entryText, date: date, photoLocalIdentifier: self?.selectedPhotoLocalIdentifier)
-            print("save completed")
+            // Call the method to save the entry immediately with no photo
+            self?.saveEntry(with: entryText, date: date, photoLocalIdentifier: nil)
         }
+        alert.addAction(noPhotoAction)
         
-        submitButton.setValue("Save", forKey: "title")
-        alert.addAction(submitButton)
-        
+        let pickPhotoAction = UIAlertAction(title: "Pick Photo", style: .default) { [weak self] _ in
+            // Call the method to present the image picker
+            self?.presentImagePickerIfNeeded()
+            
+            // Update the imagePickerCompletion closure to save the entry with the selected photo's local identifier
+            self?.imagePickerCompletion = { [weak self] localIdentifier in
+                // Retrieve text and date from the alert text fields
+                let entryText = alert.textFields?.first?.text
+                let dateString = alert.textFields?.last?.text
+                let dateFormatter = DateFormatter()
+                dateFormatter.dateFormat = "yyyy-MM-dd"
+                let date = dateString.flatMap { dateFormatter.date(from: $0) }
+                
+                // Call the method to save the entry immediately with the selected photo's local identifier
+                self?.saveEntry(with: entryText, date: date, photoLocalIdentifier: localIdentifier)
+            }
+        }
+        alert.addAction(pickPhotoAction)
+        // Present the alert controller
         present(alert, animated: true, completion: nil)
     }
-    
+
     // Function to save a new entry
-    func saveNewEntry(with text: String?, date: Date?, photoLocalIdentifier: String?) {
+    func saveEntry(with text: String?, date: Date?, photoLocalIdentifier: String?) {
         guard let text = text, !text.isEmpty else {
             print("Entry text is empty.")
             return
         }
-
+        
+        // Stop any asynchronous processes that reload the table view
+        displayRandomEntryWorkItem?.cancel()
+        
         let context = CDcontext
 
         let newEntry = JournalEntry(context: context)
@@ -372,77 +386,40 @@ class WelcomeViewController: UIViewController, UITableViewDelegate, UITableViewD
             try context.save()
             print("Entry saved successfully")
 
-            // After saving the entry, set default background if no photo is selected
-            if photoLocalIdentifier == nil {
-                defaultBackgroundPhoto()
-            }
+            // Reload the table view data
+            fetchRandomEntry()
         } catch {
             print("Unable to save new entry:", error.localizedDescription)
         }
+        animateConfetti()
     }
 
-    // Function to save a new entry
-    func saveEntry(with text: String?, date: Date?,photoLocalIdentifier: String?) {
-        let newEntry = JournalEntry(context: CDcontext)
-        newEntry.body = text
-        newEntry.timestamp = date ?? Date() // Use provided date or today's date if nil
-        newEntry.photoLocalIdentifier = photoLocalIdentifier // Save the photo local identifier
-
-        // Save the new entry to the context
-        do {
-            try CDcontext.save()
-            print("Entry saved successfully")
-            
-            // After saving the entry, set default background if no photo is selected
-            if photoLocalIdentifier == nil {
-                defaultBackgroundPhoto()
-            }
-        } catch {
-            print("Unable to save new entry:", error.localizedDescription)
-        }
-    }
-
-
-    // Function to present image picker if a photo is to be selected
+    // Function to present image picker if needed
     func presentImagePickerIfNeeded() {
         let imagePicker = UIImagePickerController()
         imagePicker.delegate = self
         imagePicker.sourceType = .photoLibrary
         present(imagePicker, animated: true, completion: nil)
     }
-    
+
     // UIImagePickerControllerDelegate method to handle image selection
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
-        if let pickedImage = info[.originalImage] as? UIImage {
-            // Convert the optional Data? value to non-optional Data using optional binding
-            if let imageData = pickedImage.jpegData(compressionQuality: 1.0) {
-                // Save the picked image to the photo library
-                PHPhotoLibrary.shared().performChanges({
-                    let creationRequest = PHAssetCreationRequest.forAsset()
-                    creationRequest.addResource(with: .photo, data: imageData, options: nil)
-                }) { [weak self] success, error in
-                    if success {
-                        print("Image saved successfully to photo library.")
-                        // Retrieve the local identifier of the saved asset
-                        let asset = info[.phAsset] as? PHAsset
-                        let localIdentifier = asset?.localIdentifier
-                        
-                        // Save the entry with the selected photo local identifier
-                        self?.saveNewEntry(with: nil, date: nil, photoLocalIdentifier: localIdentifier)
-                        
-                        // Set the selected photo local identifier
-                        self?.selectedPhotoLocalIdentifier = localIdentifier
-                        
-                        // Animate confetti
-                        self?.animateConfetti()
-                    } else {
-                        print("Failed to save image to photo library:", error?.localizedDescription ?? "Unknown error")
-                    }
-                }
-            } else {
-                print("Failed to convert UIImage to Data.")
-            }
+        // Retrieve the PHAsset representing the selected image
+        if let phAsset = info[.phAsset] as? PHAsset {
+            // Retrieve the local identifier of the selected asset
+            let localIdentifier = phAsset.localIdentifier
+            // Call the imagePickerCompletion closure with the selected photo's local identifier
+            imagePickerCompletion?(localIdentifier)
+        } else {
+            // If unable to retrieve the PHAsset, call the imagePickerCompletion closure with nil
+            imagePickerCompletion?(nil)
         }
+        // Dismiss the image picker controller
+        picker.dismiss(animated: true, completion: nil)
+    }
+
+    // UIImagePickerControllerDelegate method to handle cancellation
+    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
         picker.dismiss(animated: true, completion: nil)
     }
 
@@ -523,4 +500,12 @@ class WelcomeViewController: UIViewController, UITableViewDelegate, UITableViewD
           
           return cell
       }
+    
+    // Function to present image picker
+    func presentImagePicker() {
+        let imagePicker = UIImagePickerController()
+        imagePicker.delegate = self
+        imagePicker.sourceType = .photoLibrary
+        present(imagePicker, animated: true, completion: nil)
+    }
   }
