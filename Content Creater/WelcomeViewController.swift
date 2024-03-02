@@ -39,13 +39,22 @@ class WelcomeViewController: UIViewController, UITableViewDelegate, UITableViewD
         
         setupTableView()
         //        setupBookImageView()
-        
-
-        
         setupConfettiAnimation()
-        examineCoreDataInfo()
-        defaultBackgroundPhoto()
+//        examineCoreDataInfo()
         fetchRandomEntry()
+        checkAndSetDefaultBackgroundPhoto()
+    }
+    
+    func checkAndSetDefaultBackgroundPhoto() {
+        do {
+            let fetchRequest: NSFetchRequest<JournalEntry> = JournalEntry.fetchRequest()
+            let allEntries = try CDcontext.fetch(fetchRequest)
+            if allEntries.isEmpty {
+                defaultBackgroundPhoto()
+            }
+        } catch {
+            print("Error fetching JournalEntries:", error.localizedDescription)
+        }
     }
     
     func examineCoreDataInfo() {
@@ -210,20 +219,22 @@ class WelcomeViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     func displayRandomEntry(_ entry: JournalEntry) {
         items = [entry]
-        // Check if the photoLocalIdentifier is not nil
-        if let photoLocalIdentifier = entry.photoLocalIdentifier {
-            print("Photo Local Identifier:", photoLocalIdentifier)
-            // Set the background image if photoLocalIdentifier is not nil
-            setBackgroundPhoto(with: photoLocalIdentifier)
-        } else {
-            print("Photo Local Identifier is nil")
-            // Set the default background image if photoLocalIdentifier is nil
-            defaultBackgroundPhoto()
-        }
+
         
         displayView.reloadData()
 
         currentRandomEntryIndex += 1
+        
+        // Check if the photoLocalIdentifier is not nil
+        if let photoLocalIdentifier = entry.photoLocalIdentifier {
+            //print("Photo Local Identifier:", photoLocalIdentifier)
+            // Set the background image if photoLocalIdentifier is not nil
+            setBackgroundPhoto(with: photoLocalIdentifier)
+        } else {
+            //print("Photo Local Identifier is nil")
+            // Set the default background image if photoLocalIdentifier is nil
+            defaultBackgroundPhoto()
+        }
 
         let fadeInAnimation = CATransition()
         fadeInAnimation.duration = 2.0
@@ -388,6 +399,13 @@ class WelcomeViewController: UIViewController, UITableViewDelegate, UITableViewD
 
             // Reload the table view data
             fetchRandomEntry()
+            
+            // Check if the default message is currently being displayed
+            if let backgroundView = displayView.backgroundView as? UILabel,
+               backgroundView.text == "Time to make some entries! The confetti will be different each time. Enjoy!" {
+                // Remove the default message
+                displayView.backgroundView = nil
+            }
         } catch {
             print("Unable to save new entry:", error.localizedDescription)
         }
