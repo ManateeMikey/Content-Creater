@@ -8,6 +8,7 @@
 import UIKit
 import CoreData
 import UserNotifications
+import Photos
 
 class AllEntriesViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
 
@@ -91,21 +92,40 @@ class AllEntriesViewController: UIViewController, UIImagePickerControllerDelegat
 
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         if let selectedImage = info[UIImagePickerController.InfoKey.originalImage] as? UIImage {
-            // Save the selected photo to UserDefaults
-            if let imageData = selectedImage.jpegData(compressionQuality: 1.0) {
-                UserDefaults.standard.set(imageData, forKey: "backgroundPhoto")
-                print("Custom Image Data Saved to UserDefaults: \(imageData)")
+            // Check if an entry is selected
+            if let selectedIndexPath = tableView.indexPathForSelectedRow {
+                // Update the associated photo string for the selected entry
+                guard let items = items else {
+                    print("Items array is nil")
+                    return
+                }
+                guard selectedIndexPath.row < items.count else {
+                    print("Invalid indexPath")
+                    return
+                }
+                let entry = items[selectedIndexPath.row]
+                // Get the PHAsset for the selected image
+                if let asset = info[UIImagePickerController.InfoKey.phAsset] as? PHAsset {
+                    // Use the localIdentifier of the PHAsset as the photoLocalIdentifier
+                    entry.photoLocalIdentifier = asset.localIdentifier
+                    do {
+                        try context.save()
+                        print("Photo Updated")
+                        // Reload the specific row to reflect the changes
+                        tableView.reloadRows(at: [selectedIndexPath], with: .automatic)
+                    } catch {
+                        print("Unable to save changes")
+                    }
+                }
+            } else {
+                // Save the selected photo as the background photo
+                // Get the PHAsset for the selected image
+                if let asset = info[UIImagePickerController.InfoKey.phAsset] as? PHAsset {
+                    // Use the localIdentifier of the PHAsset as the backgroundPhotoUUID
+                    UserDefaults.standard.set(asset.localIdentifier, forKey: "backgroundPhotoUUID")
+                    setBackgroundImage(selectedImage)
+                }
             }
-
-            // Update the selected image
-            self.selectedImage = selectedImage
-
-            // Set the background image
-            setBackgroundImage(selectedImage)
-        } else if let defaultBackgroundImage = UIImage(named: "HistoryBackground") {
-            // If the user did not choose a custom photo, use the "HistoryBackground" asset as a fallback
-            UserDefaults.standard.removeObject(forKey: "backgroundPhoto") // Remove any previously saved custom photo
-            setBackgroundImage(defaultBackgroundImage)
         }
 
         picker.dismiss(animated: true, completion: nil)
@@ -176,24 +196,31 @@ class AllEntriesViewController: UIViewController, UIImagePickerControllerDelegat
     
     //Change Entry
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let entry = self.items![indexPath.row]
+        let entry = items![indexPath.row]
 
         let alert = UIAlertController(title: "Edit Entry", message: "Change this entry", preferredStyle: .alert)
         alert.addTextField { textField in
             textField.placeholder = "Body"
             textField.text = entry.body
         }
-
-//        // Use a UIDatePicker as the input view for the timestamp text field
-//        let datePicker = UIDatePicker()
-//        datePicker.datePickerMode = .date
-//        datePicker.date = entry.timestamp ?? Date()  // Set the initial date
-
         alert.addTextField { textField in
-            textField.placeholder = "Timestamp"
-            textField.text = self.dateFormatter.string(from: entry.timestamp ?? Date())
-//            textField.inputView = datePicker
+            textField.placeholder = "Timestamp (yyyy-MM-dd)"
+            if let timestamp = entry.timestamp {
+                let dateFormatter = DateFormatter()
+                dateFormatter.dateFormat = "yyyy-MM-dd"
+                textField.text = dateFormatter.string(from: timestamp)
+            }
         }
+
+        let imagePickerAction = UIAlertAction(title: "Change Photo", style: .default) { _ in
+            let imagePickerController = UIImagePickerController()
+            imagePickerController.delegate = self
+            imagePickerController.sourceType = .photoLibrary
+            self.present(imagePickerController, animated: true, completion: nil)
+        }
+        alert.addAction(imagePickerAction)
+
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
 
         let saveButton = UIAlertAction(title: "Save", style: .default) { [weak self] _ in
             guard let self = self else { return }
