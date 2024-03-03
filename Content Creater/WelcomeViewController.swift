@@ -40,7 +40,7 @@ class WelcomeViewController: UIViewController, UITableViewDelegate, UITableViewD
         setupTableView()
         //        setupBookImageView()
         setupConfettiAnimation()
-        examineCoreDataInfo()
+//        examineCoreDataInfo()
         fetchRandomEntry()
         checkAndSetDefaultBackgroundPhoto()
     }
