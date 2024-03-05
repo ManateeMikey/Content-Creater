@@ -80,7 +80,35 @@ class AllEntriesViewController: UIViewController, UIImagePickerControllerDelegat
             setBackgroundImage(defaultBackgroundImage)
         }
         
-        
+        // Add a button to re-ask for photo library permissions
+          let permissionButton = UIButton(type: .system)
+          permissionButton.setTitle("Re-ask for Photo Permissions", for: .normal)
+          permissionButton.addTarget(self, action: #selector(requestPhotoLibraryPermissions), for: .touchUpInside)
+          view.addSubview(permissionButton)
+
+          // Set constraints for the button at the bottom of the view
+          permissionButton.translatesAutoresizingMaskIntoConstraints = false
+          NSLayoutConstraint.activate([
+              permissionButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+              permissionButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20)
+          ])
+
+    }
+    
+    // Action method to request photo library permissions
+    @objc func requestPhotoLibraryPermissions() {
+        PHPhotoLibrary.requestAuthorization { status in
+            switch status {
+            case .authorized:
+                print("Photo library access granted")
+            case .denied, .restricted:
+                print("Photo library access denied")
+            case .notDetermined:
+                print("Photo library access not determined")
+            @unknown default:
+                fatalError("Unhandled case")
+            }
+        }
     }
     
     @objc func selectBackgroundPhoto() {

@@ -42,7 +42,23 @@ class WelcomeViewController: UIViewController, UITableViewDelegate, UITableViewD
         setupConfettiAnimation()
 //        examineCoreDataInfo()
         fetchRandomEntry()
+        autoInitializeEntriesWithPhotos()
         checkAndSetDefaultBackgroundPhoto()
+    }
+    
+    func autoInitializeEntriesWithPhotos() {
+        do {
+            let fetchRequest: NSFetchRequest<JournalEntry> = JournalEntry.fetchRequest()
+            let allEntries = try CDcontext.fetch(fetchRequest)
+            
+            for entry in allEntries {
+                // Check if the entry has a photo local identifier
+                if let photoLocalIdentifier = entry.photoLocalIdentifier {
+                }
+            }
+        } catch {
+            print("Error fetching JournalEntries:", error.localizedDescription)
+        }
     }
     
     func checkAndSetDefaultBackgroundPhoto() {
@@ -272,10 +288,6 @@ class WelcomeViewController: UIViewController, UITableViewDelegate, UITableViewD
 
     private func setBackgroundPhoto(with localIdentifier: String) {
         print("Setting background photo with identifier:", localIdentifier)
-        // Remove the existing background image view if it exists
-        if let existingBackgroundImageView = self.view.subviews.first(where: { $0 is UIImageView }) {
-            existingBackgroundImageView.removeFromSuperview()
-        }
 
         let fetchResult = PHAsset.fetchAssets(withLocalIdentifiers: [localIdentifier], options: nil)
         if let asset = fetchResult.firstObject {
@@ -291,6 +303,11 @@ class WelcomeViewController: UIViewController, UITableViewDelegate, UITableViewD
                 }
 
                 DispatchQueue.main.async {
+                    // Remove the existing background image view if it exists
+                    if let existingBackgroundImageView = self?.view.subviews.first(where: { $0 is UIImageView }) {
+                        existingBackgroundImageView.removeFromSuperview()
+                    }
+                    
                     // Set the background image
                     self?.view.backgroundColor = UIColor(patternImage: backgroundImage)
                 }
