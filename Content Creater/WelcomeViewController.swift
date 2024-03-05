@@ -42,23 +42,7 @@ class WelcomeViewController: UIViewController, UITableViewDelegate, UITableViewD
         setupConfettiAnimation()
 //        examineCoreDataInfo()
         fetchRandomEntry()
-        autoInitializeEntriesWithPhotos()
         checkAndSetDefaultBackgroundPhoto()
-    }
-    
-    func autoInitializeEntriesWithPhotos() {
-        do {
-            let fetchRequest: NSFetchRequest<JournalEntry> = JournalEntry.fetchRequest()
-            let allEntries = try CDcontext.fetch(fetchRequest)
-            
-            for entry in allEntries {
-                // Check if the entry has a photo local identifier
-                if let photoLocalIdentifier = entry.photoLocalIdentifier {
-                }
-            }
-        } catch {
-            print("Error fetching JournalEntries:", error.localizedDescription)
-        }
     }
     
     func checkAndSetDefaultBackgroundPhoto() {
@@ -235,29 +219,28 @@ class WelcomeViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     func displayRandomEntry(_ entry: JournalEntry) {
         items = [entry]
-
         
-        displayView.reloadData()
-
-        currentRandomEntryIndex += 1
+        // Remove any existing background image view
+         removeBackgroundImageView()
         
-        // Check if the photoLocalIdentifier is not nil
         if let photoLocalIdentifier = entry.photoLocalIdentifier {
-            //print("Photo Local Identifier:", photoLocalIdentifier)
-            // Set the background image if photoLocalIdentifier is not nil
             setBackgroundPhoto(with: photoLocalIdentifier)
         } else {
-            //print("Photo Local Identifier is nil")
-            // Set the default background image if photoLocalIdentifier is nil
             defaultBackgroundPhoto()
         }
 
+        displayView.reloadData()
+
+        currentRandomEntryIndex += 1
+
+
+
         let fadeInAnimation = CATransition()
-        fadeInAnimation.duration = 2.0
+        fadeInAnimation.duration = 0.5
         fadeInAnimation.type = .fade
         fadeInAnimation.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
 
-        displayView.layer.add(fadeInAnimation, forKey: "fadeAnimation")
+//        displayView.layer.add(fadeInAnimation, forKey: "fadeAnimation")
 
         displayRandomEntryWorkItem = DispatchWorkItem { [weak self] in
             if let currentIndex = self?.currentRandomEntryIndex, currentIndex < self?.randomEntries.count ?? 0 {
@@ -285,6 +268,13 @@ class WelcomeViewController: UIViewController, UITableViewDelegate, UITableViewD
 
 
     }
+    
+    private func removeBackgroundImageView() {
+        // Find and remove any existing background image view
+        if let existingBackgroundImageView = self.view.subviews.first(where: { $0 is UIImageView }) {
+            existingBackgroundImageView.removeFromSuperview()
+        }
+    }
 
     private func setBackgroundPhoto(with localIdentifier: String) {
         print("Setting background photo with identifier:", localIdentifier)
@@ -303,17 +293,15 @@ class WelcomeViewController: UIViewController, UITableViewDelegate, UITableViewD
                 }
 
                 DispatchQueue.main.async {
-                    // Remove the existing background image view if it exists
-                    if let existingBackgroundImageView = self?.view.subviews.first(where: { $0 is UIImageView }) {
-                        existingBackgroundImageView.removeFromSuperview()
-                    }
-                    
-                    // Set the background image
-                    self?.view.backgroundColor = UIColor(patternImage: backgroundImage)
+                    UIView.transition(with: self?.view ?? UIView(), duration: 0.5, options: [.transitionCrossDissolve], animations: {
+                        // Set the background image with a smooth cross dissolve transition
+                        self?.view.backgroundColor = UIColor(patternImage: backgroundImage)
+                    }, completion: nil)
                 }
             }
         }
     }
+    
     
     private func defaultBackgroundPhoto() {
         DispatchQueue.main.async {
@@ -520,13 +508,13 @@ class WelcomeViewController: UIViewController, UITableViewDelegate, UITableViewD
                   cell.textLabel?.text = dateString // Just show the date if body is nil
               }
               
-              if let photoLocalIdentifier = journalEntry.photoLocalIdentifier {
-                  // Set the background image if photoLocalIdentifier is not nil
-                  setBackgroundPhoto(with: photoLocalIdentifier)
-              } else {
-                  // Set the default background image if photoLocalIdentifier is nil
-                  defaultBackgroundPhoto()
-              }
+//              if let photoLocalIdentifier = journalEntry.photoLocalIdentifier {
+//                  // Set the background image if photoLocalIdentifier is not nil
+//                  setBackgroundPhoto(with: photoLocalIdentifier)
+//              } else {
+//                  // Set the default background image if photoLocalIdentifier is nil
+//                  defaultBackgroundPhoto()
+//              }
               
               cell.textLabel?.textAlignment = .center
               cell.textLabel?.font = UIFont.systemFont(ofSize: 26)
