@@ -25,7 +25,7 @@ class WelcomeViewController: UIViewController, UITableViewDelegate, UITableViewD
     var items: [JournalEntry] = []
     
     private let entryCellIdentifier = "EntryCell"
-    private let textColor = UIColor(red: 51/255.0, green: 102/255.0, blue: 153/255.0, alpha: 1.0)
+    private let textColor = UIColor.white//UIColor(red: 51/255.0, green: 102/255.0, blue: 153/255.0, alpha: 1.0)
     
     // Add a property to store the selected photo
     var selectedPhoto: UIImage?
@@ -43,6 +43,14 @@ class WelcomeViewController: UIViewController, UITableViewDelegate, UITableViewD
 //        examineCoreDataInfo()
         fetchRandomEntry()
         checkAndSetDefaultBackgroundPhoto()
+        
+        // Set the table view background color with 30% opacity
+        displayView.backgroundColor = UIColor(white: 0, alpha: 0.3)
+        
+        // Apply round corners and opacity to the table view
+        displayView.layer.cornerRadius = 20
+        displayView.layer.masksToBounds = true
+        displayView.layer.opacity = 0.8
     }
     
     func checkAndSetDefaultBackgroundPhoto() {
@@ -204,24 +212,29 @@ class WelcomeViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     func displayDefaultMessage() {
         let defaultMessage = "Try making a New Entry (or 3)!"
-        items = []
-        displayView.reloadData()
         
-        let defaultLabel = UILabel()
-        defaultLabel.text = defaultMessage
-        defaultLabel.textAlignment = .center
-        defaultLabel.textColor = textColor
-        defaultLabel.font = UIFont.systemFont(ofSize: 20)
-        
-        displayView.backgroundView = defaultLabel
-        displayView.separatorStyle = .none
+        // Check if there are any items in the items array
+        if items.isEmpty {
+            let defaultLabel = UILabel()
+            defaultLabel.text = defaultMessage
+            defaultLabel.textAlignment = .center
+            defaultLabel.textColor = textColor
+            defaultLabel.font = UIFont.systemFont(ofSize: 20)
+            
+            displayView.backgroundView = defaultLabel
+            displayView.separatorStyle = .none
+        } else {
+            // If there are items, set the background view to nil
+            displayView.backgroundView = nil
+            displayView.separatorStyle = .none
+        }
     }
     
     func displayRandomEntry(_ entry: JournalEntry) {
         items = [entry]
         
         // Remove any existing background image view
-         removeBackgroundImageView()
+        removeBackgroundImageView()
         
         if let photoLocalIdentifier = entry.photoLocalIdentifier {
             setBackgroundPhoto(with: photoLocalIdentifier)
@@ -233,14 +246,18 @@ class WelcomeViewController: UIViewController, UITableViewDelegate, UITableViewD
 
         currentRandomEntryIndex += 1
 
-
+        // Fade in animation for the table view text
+        displayView.alpha = 0
+        UIView.animate(withDuration: 1) {
+            self.displayView.alpha = 1
+        }
 
         let fadeInAnimation = CATransition()
         fadeInAnimation.duration = 0.5
         fadeInAnimation.type = .fade
         fadeInAnimation.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
 
-//        displayView.layer.add(fadeInAnimation, forKey: "fadeAnimation")
+    //    displayView.layer.add(fadeInAnimation, forKey: "fadeAnimation")
 
         displayRandomEntryWorkItem = DispatchWorkItem { [weak self] in
             if let currentIndex = self?.currentRandomEntryIndex, currentIndex < self?.randomEntries.count ?? 0 {
@@ -265,8 +282,6 @@ class WelcomeViewController: UIViewController, UITableViewDelegate, UITableViewD
         if let displayRandomEntryWorkItem = displayRandomEntryWorkItem {
             DispatchQueue.main.asyncAfter(deadline: .now() + 5.0, execute: displayRandomEntryWorkItem)
         }
-
-
     }
     
     private func removeBackgroundImageView() {
@@ -277,8 +292,6 @@ class WelcomeViewController: UIViewController, UITableViewDelegate, UITableViewD
     }
 
     private func setBackgroundPhoto(with localIdentifier: String) {
-        print("Setting background photo with identifier:", localIdentifier)
-
         let fetchResult = PHAsset.fetchAssets(withLocalIdentifiers: [localIdentifier], options: nil)
         if let asset = fetchResult.firstObject {
             let requestOptions = PHImageRequestOptions()
@@ -292,15 +305,23 @@ class WelcomeViewController: UIViewController, UITableViewDelegate, UITableViewD
                     return
                 }
 
-                DispatchQueue.main.async {
-                    UIView.transition(with: self?.view ?? UIView(), duration: 0.5, options: [.transitionCrossDissolve], animations: {
-                        // Set the background image with a smooth cross dissolve transition
-                        self?.view.backgroundColor = UIColor(patternImage: backgroundImage)
-                    }, completion: nil)
+                // Create a new image view for the new background photo
+                let backgroundImageView = UIImageView(image: backgroundImage)
+                backgroundImageView.contentMode = .scaleAspectFill
+                backgroundImageView.frame = self?.view.bounds ?? CGRect.zero
+                backgroundImageView.alpha = 0.5 // Set initial alpha to 0
+
+                // Insert the background image view behind all existing subviews
+                self?.view.insertSubview(backgroundImageView, at: 0)
+
+                // Perform fade transition
+                UIView.animate(withDuration: 1) {
+                    backgroundImageView.alpha = 1 // Fade in the new background
                 }
             }
         }
     }
+
     
     
     private func defaultBackgroundPhoto() {
@@ -312,9 +333,17 @@ class WelcomeViewController: UIViewController, UITableViewDelegate, UITableViewD
                 backgroundImageView.contentMode = .scaleAspectFill
                 backgroundImageView.frame = self.view.bounds
                 backgroundImageView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+                backgroundImageView.alpha = 0.5 // Set initial alpha to 0.5
+
                 
                 // Insert the background image view behind all existing subviews
                 self.view.insertSubview(backgroundImageView, at: 0)
+                
+                // Perform fade transition
+                UIView.animate(withDuration: 1) {
+                    backgroundImageView.alpha = 1 // Fade in the default background
+                }
+                
             } else {
                 // If the image asset cannot be loaded, fallback to a solid color
                 self.view.backgroundColor = UIColor(named: "Pink")
@@ -415,6 +444,7 @@ class WelcomeViewController: UIViewController, UITableViewDelegate, UITableViewD
             print("Unable to save new entry:", error.localizedDescription)
         }
         animateConfetti()
+        displayDefaultMessage()
     }
 
     // Function to present image picker if needed
