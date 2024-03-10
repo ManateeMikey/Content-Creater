@@ -427,7 +427,7 @@ class WelcomeViewController: UIViewController, UITableViewDelegate, UITableViewD
                             }
                         } else {
                             // If permission is still not granted, you can handle it accordingly, such as showing a message to the user
-                            let permissionAlert = UIAlertController(title: "Permission Required", message: "Please grant access to your photo library in Settings -> Content Creator to pick a photo. This app does not save or share any of your photos with anyone else.", preferredStyle: .alert)
+                            let permissionAlert = UIAlertController(title: "Permission Required", message: "Please grant access to your photo library in Settings -> Content Creator to pick a photo. No one else, not even the app creator, will see or access any of your information.", preferredStyle: .alert)
                             let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
                             permissionAlert.addAction(okAction)
                             self?.present(permissionAlert, animated: true, completion: nil)
