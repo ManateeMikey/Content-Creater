@@ -388,22 +388,55 @@ class WelcomeViewController: UIViewController, UITableViewDelegate, UITableViewD
         alert.addAction(noPhotoAction)
         
         let pickPhotoAction = UIAlertAction(title: "Pick Photo", style: .default) { [weak self] _ in
-            // Call the method to present the image picker
-            self?.presentImagePickerIfNeeded()
-            
-            // Update the imagePickerCompletion closure to save the entry with the selected photo's local identifier
-            self?.imagePickerCompletion = { [weak self] localIdentifier in
-                // Retrieve text and date from the alert text fields
-                let entryText = alert.textFields?.first?.text
-                let dateString = alert.textFields?.last?.text
-                let dateFormatter = DateFormatter()
-                dateFormatter.dateFormat = "yyyy-MM-dd"
-                let date = dateString.flatMap { dateFormatter.date(from: $0) }
+            // Check if the app has permission to access the photo library
+            if PHPhotoLibrary.authorizationStatus() == .authorized {
+                // If permission is granted, present the image picker
+                self?.presentImagePickerIfNeeded()
                 
-                // Call the method to save the entry immediately with the selected photo's local identifier
-                self?.saveEntry(with: entryText, date: date, photoLocalIdentifier: localIdentifier)
+                // Update the imagePickerCompletion closure to save the entry with the selected photo's local identifier
+                self?.imagePickerCompletion = { [weak self] localIdentifier in
+                    // Retrieve text and date from the alert text fields
+                    let entryText = alert.textFields?.first?.text
+                    let dateString = alert.textFields?.last?.text
+                    let dateFormatter = DateFormatter()
+                    dateFormatter.dateFormat = "yyyy-MM-dd"
+                    let date = dateString.flatMap { dateFormatter.date(from: $0) }
+                    
+                    // Call the method to save the entry immediately with the selected photo's local identifier
+                    self?.saveEntry(with: entryText, date: date, photoLocalIdentifier: localIdentifier)
+                }
+            } else {
+                // If permission is not granted, display an additional popup to ask for permission
+                PHPhotoLibrary.requestAuthorization { status in
+                    DispatchQueue.main.async {
+                        if status == .authorized {
+                            // If permission is granted after requesting, proceed with presenting the image picker
+                            self?.presentImagePickerIfNeeded()
+                            
+                            // Update the imagePickerCompletion closure to save the entry with the selected photo's local identifier
+                            self?.imagePickerCompletion = { [weak self] localIdentifier in
+                                // Retrieve text and date from the alert text fields
+                                let entryText = alert.textFields?.first?.text
+                                let dateString = alert.textFields?.last?.text
+                                let dateFormatter = DateFormatter()
+                                dateFormatter.dateFormat = "yyyy-MM-dd"
+                                let date = dateString.flatMap { dateFormatter.date(from: $0) }
+                                
+                                // Call the method to save the entry immediately with the selected photo's local identifier
+                                self?.saveEntry(with: entryText, date: date, photoLocalIdentifier: localIdentifier)
+                            }
+                        } else {
+                            // If permission is still not granted, you can handle it accordingly, such as showing a message to the user
+                            let permissionAlert = UIAlertController(title: "Permission Required", message: "Please grant access to your photo library in Settings -> Content Creator to pick a photo. This app does not save or share any of your photos with anyone else.", preferredStyle: .alert)
+                            let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
+                            permissionAlert.addAction(okAction)
+                            self?.present(permissionAlert, animated: true, completion: nil)
+                        }
+                    }
+                }
             }
         }
+        
         alert.addAction(pickPhotoAction)
         // Present the alert controller
         present(alert, animated: true, completion: nil)
