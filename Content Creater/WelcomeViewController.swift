@@ -248,7 +248,7 @@ class WelcomeViewController: UIViewController, UITableViewDelegate, UITableViewD
 
         // Fade in animation for the table view text
         displayView.alpha = 0
-        UIView.animate(withDuration: 1.25) {
+        UIView.animate(withDuration: 2) {
             self.displayView.alpha = 1
         }
 
@@ -315,7 +315,7 @@ class WelcomeViewController: UIViewController, UITableViewDelegate, UITableViewD
                 self?.view.insertSubview(backgroundImageView, at: 0)
 
                 // Perform fade transition
-                UIView.animate(withDuration: 1.25) {
+                UIView.animate(withDuration: 2) {
                     backgroundImageView.alpha = 1 // Fade in the new background
                 }
             }
@@ -340,7 +340,7 @@ class WelcomeViewController: UIViewController, UITableViewDelegate, UITableViewD
                 self.view.insertSubview(backgroundImageView, at: 0)
                 
                 // Perform fade transition
-                UIView.animate(withDuration: 1.25) {
+                UIView.animate(withDuration: 2) {
                     backgroundImageView.alpha = 1 // Fade in the default background
                 }
                 
