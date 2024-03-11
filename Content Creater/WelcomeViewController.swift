@@ -7,8 +7,7 @@
 import UIKit
 import CoreData
 import Photos
-//import RevenueCat
-
+import RevenueCat
 
 class WelcomeViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UINavigationControllerDelegate, UIImagePickerControllerDelegate {
     
@@ -51,6 +50,62 @@ class WelcomeViewController: UIViewController, UITableViewDelegate, UITableViewD
         displayView.layer.cornerRadius = 20
         displayView.layer.masksToBounds = true
         displayView.layer.opacity = 0.8
+        
+    }
+    
+    @IBAction func TipJar(_ sender: Any) {
+        Purchases.shared.getOfferings { [weak self] (offerings, error) in
+             if let error = error {
+                 print("Error fetching offerings: \(error.localizedDescription)")
+                 return
+             }
+             
+             guard let packages = offerings?.current?.availablePackages else {
+                 print("No offerings available.")
+                 return
+             }
+            
+            
+            // For example, you could present them to the user for selection
+            self?.presentOfferings(packages)
+         }
+    }
+    
+    func presentOfferings(_ packages: [Package]) {
+        Purchases.shared.getOfferings { [weak self] (offerings, error) in
+            if let error = error {
+                print("Error fetching offerings: \(error.localizedDescription)")
+                return
+            }
+            
+            guard let packages = offerings?.current?.availablePackages else {
+                print("No offerings available.")
+                return
+            }
+            
+            // Assuming you want to purchase the first available package, you can modify this as needed
+            if let package = packages.first {
+                self?.purchase(package) // Call the purchase method with the selected package
+            } else {
+                print("No package available for purchase.")
+            }
+        }
+    }
+
+    func purchase(_ package: Package) {
+        // Example: Initiate a purchase for the selected package
+        Purchases.shared.purchase(package: package) { (transaction, purchaserInfo, error, userCancelled) in
+            if let error = error {
+                print("Error purchasing package: \(error.localizedDescription)")
+                // Handle the purchase error, such as displaying an alert to the user
+                return
+            }
+            
+            if let purchaserInfo = purchaserInfo {
+                // Purchase successful, you can now unlock content or features for the user
+                print("Purchase successful. Offerings: \(purchaserInfo)")
+            }
+        }
     }
     
     func checkAndSetDefaultBackgroundPhoto() {
