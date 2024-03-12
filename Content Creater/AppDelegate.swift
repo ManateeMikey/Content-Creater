@@ -7,6 +7,7 @@
 
 import UIKit
 import CoreData
+import RevenueCat
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate {
@@ -23,7 +24,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
                 print("Notification permission denied")
             }
         }
-
+        
+        Purchases.logLevel = .debug
+        Purchases.configure(withAPIKey: "appl_BHmapZLBxyWdNeSEvSWiFQmxiRa")
         return true
     }
 

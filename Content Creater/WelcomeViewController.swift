@@ -107,6 +107,7 @@ class WelcomeViewController: UIViewController, UITableViewDelegate, UITableViewD
             }
         }
     }
+
     
     func checkAndSetDefaultBackgroundPhoto() {
         do {

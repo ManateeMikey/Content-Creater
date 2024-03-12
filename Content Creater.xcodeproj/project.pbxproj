@@ -20,6 +20,9 @@
 		CDC12FC22B2E447100522CC5 /* Content_CreaterUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDC12FC12B2E447100522CC5 /* Content_CreaterUITestsLaunchTests.swift */; };
 		CDC12FDC2B2E477800522CC5 /* WelcomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDC12FDB2B2E477800522CC5 /* WelcomeViewController.swift */; };
 		CDC12FDE2B2E47BD00522CC5 /* AllEntriesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDC12FDD2B2E47BD00522CC5 /* AllEntriesViewController.swift */; };
+		CDC831542BA10D3300716A86 /* Content Creater.storekit in Resources */ = {isa = PBXBuildFile; fileRef = CDC831532BA10D3300716A86 /* Content Creater.storekit */; };
+		CDC831552BA10D3300716A86 /* Content Creater.storekit in Resources */ = {isa = PBXBuildFile; fileRef = CDC831532BA10D3300716A86 /* Content Creater.storekit */; };
+		CDC831562BA10D3300716A86 /* Content Creater.storekit in Resources */ = {isa = PBXBuildFile; fileRef = CDC831532BA10D3300716A86 /* Content Creater.storekit */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -55,6 +58,7 @@
 		CDC12FC12B2E447100522CC5 /* Content_CreaterUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Content_CreaterUITestsLaunchTests.swift; sourceTree = "<group>"; };
 		CDC12FDB2B2E477800522CC5 /* WelcomeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeViewController.swift; sourceTree = "<group>"; };
 		CDC12FDD2B2E47BD00522CC5 /* AllEntriesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllEntriesViewController.swift; sourceTree = "<group>"; };
+		CDC831532BA10D3300716A86 /* Content Creater.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; name = "Content Creater.storekit"; path = "Content Creater/Content Creater.storekit"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -87,6 +91,7 @@
 		CDC12F922B2E447000522CC5 = {
 			isa = PBXGroup;
 			children = (
+				CDC831532BA10D3300716A86 /* Content Creater.storekit */,
 				CDC12FCF2B2E448E00522CC5 /* DataModel */,
 				CDC12F9D2B2E447000522CC5 /* Content Creater */,
 				CDC12FB42B2E447100522CC5 /* Content CreaterTests */,
@@ -256,6 +261,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CDC831542BA10D3300716A86 /* Content Creater.storekit in Resources */,
 				CDC12FAB2B2E447100522CC5 /* LaunchScreen.storyboard in Resources */,
 				CDC12FA82B2E447100522CC5 /* Assets.xcassets in Resources */,
 				CDC12FA62B2E447000522CC5 /* Main.storyboard in Resources */,
@@ -266,6 +272,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CDC831552BA10D3300716A86 /* Content Creater.storekit in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -273,6 +280,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CDC831562BA10D3300716A86 /* Content Creater.storekit in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
