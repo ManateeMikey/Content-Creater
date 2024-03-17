@@ -8,8 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		CD6276922B2E53E000C4BD29 /* Entries.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = CD6276902B2E53E000C4BD29 /* Entries.xcdatamodeld */; };
-		CD6276952B44D10200C4BD29 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = CD6276942B44D10200C4BD29 /* RevenueCat */; };
-		CD6276972B44D10200C4BD29 /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = CD6276962B44D10200C4BD29 /* RevenueCatUI */; };
+		CDB7AE662BA74A88001EAD7B /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CDB7AE652BA74A88001EAD7B /* StoreKit.framework */; };
 		CDC12F9F2B2E447000522CC5 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDC12F9E2B2E447000522CC5 /* AppDelegate.swift */; };
 		CDC12FA12B2E447000522CC5 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDC12FA02B2E447000522CC5 /* SceneDelegate.swift */; };
 		CDC12FA62B2E447000522CC5 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = CDC12FA42B2E447000522CC5 /* Main.storyboard */; };
@@ -44,6 +43,7 @@
 
 /* Begin PBXFileReference section */
 		CD6276912B2E53E000C4BD29 /* Entries.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Entries.xcdatamodel; sourceTree = "<group>"; };
+		CDB7AE652BA74A88001EAD7B /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		CDC12F9B2B2E447000522CC5 /* Content Creater.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Content Creater.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		CDC12F9E2B2E447000522CC5 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		CDC12FA02B2E447000522CC5 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -66,8 +66,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CD6276972B44D10200C4BD29 /* RevenueCatUI in Frameworks */,
-				CD6276952B44D10200C4BD29 /* RevenueCat in Frameworks */,
+				CDB7AE662BA74A88001EAD7B /* StoreKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -88,6 +87,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		CDB7AE642BA74A88001EAD7B /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				CDB7AE652BA74A88001EAD7B /* StoreKit.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		CDC12F922B2E447000522CC5 = {
 			isa = PBXGroup;
 			children = (
@@ -97,6 +104,7 @@
 				CDC12FB42B2E447100522CC5 /* Content CreaterTests */,
 				CDC12FBE2B2E447100522CC5 /* Content CreaterUITests */,
 				CDC12F9C2B2E447000522CC5 /* Products */,
+				CDB7AE642BA74A88001EAD7B /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -167,8 +175,6 @@
 			);
 			name = "Content Creater";
 			packageProductDependencies = (
-				CD6276942B44D10200C4BD29 /* RevenueCat */,
-				CD6276962B44D10200C4BD29 /* RevenueCatUI */,
 			);
 			productName = "Content Creater";
 			productReference = CDC12F9B2B2E447000522CC5 /* Content Creater.app */;
@@ -243,7 +249,6 @@
 			);
 			mainGroup = CDC12F922B2E447000522CC5;
 			packageReferences = (
-				CD6276932B44D10200C4BD29 /* XCRemoteSwiftPackageReference "purchases-ios" */,
 			);
 			productRefGroup = CDC12F9C2B2E447000522CC5 /* Products */;
 			projectDirPath = "";
@@ -642,30 +647,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCRemoteSwiftPackageReference section */
-		CD6276932B44D10200C4BD29 /* XCRemoteSwiftPackageReference "purchases-ios" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/RevenueCat/purchases-ios.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 4.31.6;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		CD6276942B44D10200C4BD29 /* RevenueCat */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = CD6276932B44D10200C4BD29 /* XCRemoteSwiftPackageReference "purchases-ios" */;
-			productName = RevenueCat;
-		};
-		CD6276962B44D10200C4BD29 /* RevenueCatUI */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = CD6276932B44D10200C4BD29 /* XCRemoteSwiftPackageReference "purchases-ios" */;
-			productName = RevenueCatUI;
-		};
-/* End XCSwiftPackageProductDependency section */
 
 /* Begin XCVersionGroup section */
 		CD6276902B2E53E000C4BD29 /* Entries.xcdatamodeld */ = {

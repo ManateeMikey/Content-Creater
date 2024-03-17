@@ -75,7 +75,7 @@
          </BuildableReference>
       </BuildableProductRunnable>
       <StoreKitConfigurationFileReference
-         identifier = "../../Content Creater/Content Creater.storekit">
+         identifier = "../../../../../../Library/Developer/Xcode/DerivedData/Content_Creater-bxmmzovgjuxzrkemeilmgqfltuhx/SourcePackages/checkouts/purchases-ios/Tests/TestingApps/PaywallsTester/PaywallsTester/Products.storekit">
       </StoreKitConfigurationFileReference>
    </LaunchAction>
    <ProfileAction

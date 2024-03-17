@@ -7,9 +7,10 @@
 import UIKit
 import CoreData
 import Photos
-import RevenueCat
+//import RevenueCat
+import StoreKit
 
-class WelcomeViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UINavigationControllerDelegate, UIImagePickerControllerDelegate {
+class WelcomeViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UINavigationControllerDelegate, UIImagePickerControllerDelegate, SKProductsRequestDelegate {
     
     @IBOutlet weak var displayView: UITableView!
     var randomEntries: [JournalEntry] = []
@@ -54,56 +55,65 @@ class WelcomeViewController: UIViewController, UITableViewDelegate, UITableViewD
     }
     
     @IBAction func TipJar(_ sender: Any) {
-        Purchases.shared.getOfferings { [weak self] (offerings, error) in
-             if let error = error {
-                 print("Error fetching offerings: \(error.localizedDescription)")
-                 return
-             }
-             
-             guard let packages = offerings?.current?.availablePackages else {
-                 print("No offerings available.")
-                 return
-             }
-            
-            
-            // For example, you could present them to the user for selection
-            self?.presentOfferings(packages)
-         }
+        // Fetch product offerings from the App Store
+        fetchProductInformation()
     }
-    
-    func presentOfferings(_ packages: [Package]) {
-        Purchases.shared.getOfferings { [weak self] (offerings, error) in
-            if let error = error {
-                print("Error fetching offerings: \(error.localizedDescription)")
-                return
-            }
-            
-            guard let packages = offerings?.current?.availablePackages else {
-                print("No offerings available.")
-                return
-            }
-            
-            // Assuming you want to purchase the first available package, you can modify this as needed
-            if let package = packages.first {
-                self?.purchase(package) // Call the purchase method with the selected package
-            } else {
-                print("No package available for purchase.")
-            }
+
+    // Function to fetch product information from the App Store
+    func fetchProductInformation() {
+        let productIdentifiers: Set<String> = ["com.analyticai.contentcreater.tipjar"] // Add your product identifiers here
+
+        let request = SKProductsRequest(productIdentifiers: productIdentifiers)
+        request.delegate = self
+        request.start()
+    }
+
+    // Delegate method to handle product information response
+    func productsRequest(_ request: SKProductsRequest, didReceive response: SKProductsResponse) {
+        // Process the products received from the App Store
+        let products = response.products
+        
+        // Assuming you want to purchase the first available package, you can modify this as needed
+        if let product = products.first {
+            // Initiate a purchase for the selected product
+            purchaseProduct(product)
+        } else {
+            print("No products available for purchase.")
         }
     }
 
-    func purchase(_ package: Package) {
-        // Example: Initiate a purchase for the selected package
-        Purchases.shared.purchase(package: package) { (transaction, purchaserInfo, error, userCancelled) in
-            if let error = error {
-                print("Error purchasing package: \(error.localizedDescription)")
-                // Handle the purchase error, such as displaying an alert to the user
-                return
-            }
-            
-            if let purchaserInfo = purchaserInfo {
-                // Purchase successful, you can now unlock content or features for the user
-                print("Purchase successful. Offerings: \(purchaserInfo)")
+    // Function to initiate a purchase for a product
+    func purchaseProduct(_ product: SKProduct) {
+        let payment = SKPayment(product: product)
+        SKPaymentQueue.default().add(payment)
+    }
+
+    // Delegate method to handle transaction updates
+    func paymentQueue(_ queue: SKPaymentQueue, updatedTransactions transactions: [SKPaymentTransaction]) {
+        for transaction in transactions {
+            switch transaction.transactionState {
+            case .purchasing:
+                // The transaction is being processed by the App Store
+                break
+            case .purchased:
+                // The transaction was successful
+                // Handle unlocking content or features for the user
+                SKPaymentQueue.default().finishTransaction(transaction)
+            case .failed:
+                // The transaction failed
+                if let error = transaction.error {
+                    print("Transaction failed with error: \(error.localizedDescription)")
+                }
+                SKPaymentQueue.default().finishTransaction(transaction)
+            case .restored:
+                // The transaction was restored
+                // Handle restoring content or features for the user
+                SKPaymentQueue.default().finishTransaction(transaction)
+            case .deferred:
+                // The transaction is in the queue, but its final status is pending external action
+                break
+            @unknown default:
+                break
             }
         }
     }
@@ -430,7 +440,7 @@ class WelcomeViewController: UIViewController, UITableViewDelegate, UITableViewD
         let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
         alert.addAction(cancelAction)
         
-        let noPhotoAction = UIAlertAction(title: "No Photo", style: .default) { [weak self] _ in
+        let noPhotoAction = UIAlertAction(title: "Save Without Photo", style: .default) { [weak self] _ in
             // Retrieve text and date from the alert text fields
             let entryText = alert.textFields?.first?.text
             let dateString = alert.textFields?.last?.text
@@ -443,7 +453,7 @@ class WelcomeViewController: UIViewController, UITableViewDelegate, UITableViewD
         }
         alert.addAction(noPhotoAction)
         
-        let pickPhotoAction = UIAlertAction(title: "Pick Photo", style: .default) { [weak self] _ in
+        let pickPhotoAction = UIAlertAction(title: "Save With Photo", style: .default) { [weak self] _ in
             // Check if the app has permission to access the photo library
             if PHPhotoLibrary.authorizationStatus() == .authorized {
                 // If permission is granted, present the image picker
