@@ -1,5 +1,5 @@
 {
-  "identifier" : "BF19183F",
+  "identifier" : "8D59A02D",
   "nonRenewingSubscriptions" : [
 
   ],
@@ -18,13 +18,28 @@
       "productID" : "com.analyticai.contentcreater.tipjarconsumable",
       "referenceName" : "Tip Jar",
       "type" : "Consumable"
+    },
+    {
+      "displayPrice" : "0.99",
+      "familyShareable" : false,
+      "internalID" : "6479962724",
+      "localizations" : [
+        {
+          "description" : "Testing",
+          "displayName" : "TipJar",
+          "locale" : "en_CA"
+        }
+      ],
+      "productID" : "TESTPURCHASE",
+      "referenceName" : "Tip Test",
+      "type" : "Consumable"
     }
   ],
   "settings" : {
     "_applicationInternalID" : "6474508880",
     "_developerTeamID" : "736VQ8YZ24",
     "_failTransactionsEnabled" : false,
-    "_lastSynchronizedDate" : 732988343.68877494,
+    "_lastSynchronizedDate" : 732989698.52410197,
     "_locale" : "en_US",
     "_storefront" : "USA",
     "_storeKitErrors" : [

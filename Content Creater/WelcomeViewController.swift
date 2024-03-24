@@ -7,7 +7,6 @@
 import UIKit
 import CoreData
 import Photos
-//import RevenueCat
 import StoreKit
 
 class WelcomeViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UINavigationControllerDelegate, UIImagePickerControllerDelegate, SKProductsRequestDelegate {
