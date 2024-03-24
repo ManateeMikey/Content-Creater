@@ -39,6 +39,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		CD09E4AF2BB083B500ECAA9B /* Content Creater.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Content Creater.storekit"; sourceTree = "<group>"; };
 		CD6276912B2E53E000C4BD29 /* Entries.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Entries.xcdatamodel; sourceTree = "<group>"; };
 		CDB7AE652BA74A88001EAD7B /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		CDC12F9B2B2E447000522CC5 /* Content Creater.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Content Creater.app"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -119,6 +120,7 @@
 				CDC12F9E2B2E447000522CC5 /* AppDelegate.swift */,
 				CDC12FA02B2E447000522CC5 /* SceneDelegate.swift */,
 				CDC12FDB2B2E477800522CC5 /* WelcomeViewController.swift */,
+				CD09E4AF2BB083B500ECAA9B /* Content Creater.storekit */,
 				CDC12FA42B2E447000522CC5 /* Main.storyboard */,
 				CDC12FA72B2E447100522CC5 /* Assets.xcassets */,
 				CDC12FA92B2E447100522CC5 /* LaunchScreen.storyboard */,
