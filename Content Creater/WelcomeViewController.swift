@@ -61,7 +61,7 @@ class WelcomeViewController: UIViewController, UITableViewDelegate, UITableViewD
 
     // Function to fetch product information from the App Store
     func fetchProductInformation() {
-        let productIdentifiers: Set<String> = ["com.analyticai.contentcreater.tipjar"] // Add your product identifiers here
+        let productIdentifiers: Set<String> = ["com.analyticai.contentcreater.tipjarconsumable"] // Add your product identifiers here
 
         let request = SKProductsRequest(productIdentifiers: productIdentifiers)
         request.delegate = self
