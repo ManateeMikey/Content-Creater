@@ -297,32 +297,22 @@ class WelcomeViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     func displayRandomEntry(_ entry: JournalEntry) {
         items = [entry]
-        
+
         // Remove any existing background image view
         removeBackgroundImageView()
-        
+
         if let photoLocalIdentifier = entry.photoLocalIdentifier {
             setBackgroundPhoto(with: photoLocalIdentifier)
         } else {
             defaultBackgroundPhoto()
         }
 
-        displayView.reloadData()
+        // Reload the table view with a smooth animation
+        UIView.transition(with: displayView, duration: 2, options: .transitionCrossDissolve, animations: {
+            self.displayView.reloadData()
+        }, completion: nil)
 
         currentRandomEntryIndex += 1
-
-        // Fade in animation for the table view text
-        displayView.alpha = 0
-        UIView.animate(withDuration: 2) {
-            self.displayView.alpha = 1
-        }
-
-        let fadeInAnimation = CATransition()
-        fadeInAnimation.duration = 0.5
-        fadeInAnimation.type = .fade
-        fadeInAnimation.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
-
-    //    displayView.layer.add(fadeInAnimation, forKey: "fadeAnimation")
 
         displayRandomEntryWorkItem = DispatchWorkItem { [weak self] in
             if let currentIndex = self?.currentRandomEntryIndex, currentIndex < self?.randomEntries.count ?? 0 {
@@ -345,7 +335,7 @@ class WelcomeViewController: UIViewController, UITableViewDelegate, UITableViewD
         }
 
         if let displayRandomEntryWorkItem = displayRandomEntryWorkItem {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 5.0, execute: displayRandomEntryWorkItem)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 8.0, execute: displayRandomEntryWorkItem)
         }
     }
     
@@ -374,41 +364,65 @@ class WelcomeViewController: UIViewController, UITableViewDelegate, UITableViewD
                 let backgroundImageView = UIImageView(image: backgroundImage)
                 backgroundImageView.contentMode = .scaleAspectFill
                 backgroundImageView.frame = self?.view.bounds ?? CGRect.zero
-                backgroundImageView.alpha = 0.5 // Set initial alpha to 0
+                backgroundImageView.alpha = 0 // Set initial alpha to 0
 
-                // Insert the background image view behind all existing subviews
-                self?.view.insertSubview(backgroundImageView, at: 0)
+                // Insert the background image view below the table view
+                self?.view.insertSubview(backgroundImageView, belowSubview: self?.displayView ?? UIView())
 
-                // Perform fade transition
-                UIView.animate(withDuration: 2) {
-                    backgroundImageView.alpha = 1 // Fade in the new background
-                }
+                // Perform the transition animation to simultaneously decrease alpha of old background and increase alpha of new background
+                UIView.animate(withDuration: 4.0, animations: {
+                    // Decrease alpha of old background
+                    self?.view.subviews.first(where: { $0 is UIImageView && $0 != backgroundImageView })?.alpha = 0
+                    // Increase alpha of new background
+                    backgroundImageView.alpha = 1
+                }, completion: { _ in
+                    // Remove the old background image view
+                    self?.view.subviews.first(where: { $0 is UIImageView && $0 != backgroundImageView })?.removeFromSuperview()
+                    
+                    // Perform the fade-out animation
+                    UIView.animate(withDuration: 4.0, animations: {
+                        backgroundImageView.alpha = 0 // Gradually decrease alpha to 0.1
+                    }, completion: { _ in
+                        // Remove the new background image view after fade-out animation
+                        backgroundImageView.removeFromSuperview()
+                    })
+                })
             }
         }
     }
 
-    
-    
     private func defaultBackgroundPhoto() {
         DispatchQueue.main.async {
             // Load the image asset named "MainBackground"
             if let mainBackgroundImage = UIImage(named: "MainBackground") {
-                // Set the background of the view to the image
+                // Create a new image view for the default background photo
                 let backgroundImageView = UIImageView(image: mainBackgroundImage)
                 backgroundImageView.contentMode = .scaleAspectFill
                 backgroundImageView.frame = self.view.bounds
                 backgroundImageView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-                backgroundImageView.alpha = 0.5 // Set initial alpha to 0.5
+                backgroundImageView.alpha = 0 // Set initial alpha to 0
 
-                
-                // Insert the background image view behind all existing subviews
-                self.view.insertSubview(backgroundImageView, at: 0)
-                
-                // Perform fade transition
-                UIView.animate(withDuration: 2) {
-                    backgroundImageView.alpha = 1 // Fade in the default background
-                }
-                
+                // Insert the background image view below the table view
+                self.view.insertSubview(backgroundImageView, belowSubview: self.displayView)
+
+                // Perform the transition animation to gradually increase alpha of new background and decrease alpha of old background
+                UIView.animate(withDuration: 4.0, animations: {
+                    // Decrease alpha of old background
+                    self.view.subviews.first(where: { $0 is UIImageView && $0 != backgroundImageView })?.alpha = 0
+                    // Increase alpha of new background
+                    backgroundImageView.alpha = 1
+                }, completion: { _ in
+                    // Remove the old background image view
+                    self.view.subviews.first(where: { $0 is UIImageView && $0 != backgroundImageView })?.removeFromSuperview()
+                    
+                    // Perform the fade-out animation
+                    UIView.animate(withDuration: 4.0, animations: {
+                        backgroundImageView.alpha = 0 // Gradually decrease alpha to 0.1
+                    }, completion: { _ in
+                        // Remove the new background image view after fade-out animation
+                        backgroundImageView.removeFromSuperview()
+                    })
+                })
             } else {
                 // If the image asset cannot be loaded, fallback to a solid color
                 self.view.backgroundColor = UIColor(named: "Pink")
@@ -617,7 +631,6 @@ class WelcomeViewController: UIViewController, UITableViewDelegate, UITableViewD
 
       func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
           let cell = tableView.dequeueReusableCell(withIdentifier: entryCellIdentifier, for: indexPath)
-//          let defaultValue = ""
           cell.backgroundColor = .clear
           cell.textLabel?.backgroundColor = .clear
           
@@ -631,18 +644,24 @@ class WelcomeViewController: UIViewController, UITableViewDelegate, UITableViewD
               cell.textLabel?.lineBreakMode = .byWordWrapping
               
               if let body = journalEntry.body {
-                  cell.textLabel?.text = "\(dateString)\n\(body)"
+                  // Set the text to empty initially to perform fade-in animation
+                  cell.textLabel?.text = ""
+                  
+                  // Perform the fade-in animation for the journal entry's text
+                  UIView.transition(with: cell.textLabel!, duration: 2.0, options: .transitionCrossDissolve, animations: {
+                      cell.textLabel?.text = "\(dateString)\n\(body)"
+                  }, completion: { _ in
+                      // After fade-in animation completes, perform the fade-out animation
+                      UIView.animate(withDuration: 3.0, delay: 4.0, animations: {
+                          cell.textLabel?.alpha = 0
+                      }, completion: { _ in
+                          // After fade-out animation completes, reset alpha and start fade-in animation again
+                          cell.textLabel?.alpha = 1
+                      })
+                  })
               } else {
                   cell.textLabel?.text = dateString // Just show the date if body is nil
               }
-              
-//              if let photoLocalIdentifier = journalEntry.photoLocalIdentifier {
-//                  // Set the background image if photoLocalIdentifier is not nil
-//                  setBackgroundPhoto(with: photoLocalIdentifier)
-//              } else {
-//                  // Set the default background image if photoLocalIdentifier is nil
-//                  defaultBackgroundPhoto()
-//              }
               
               cell.textLabel?.textAlignment = .center
               cell.textLabel?.font = UIFont.systemFont(ofSize: 26)
