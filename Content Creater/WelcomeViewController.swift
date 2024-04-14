@@ -20,6 +20,7 @@ class WelcomeViewController: UIViewController, UITableViewDelegate, UITableViewD
     var confettiLayer3: CAEmitterLayer!
     var imagePickerCompletion: ((String?) -> Void)?
     let CDcontext = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+    var isDailyNotification: Bool = true // Add this property
     
     var items: [JournalEntry] = []
     
@@ -678,4 +679,104 @@ class WelcomeViewController: UIViewController, UITableViewDelegate, UITableViewD
         imagePicker.sourceType = .photoLibrary
         present(imagePicker, animated: true, completion: nil)
     }
-  }
+    
+    // Add a function to schedule notifications
+    func scheduleNotification(isDaily: Bool, selectedTime: Date) {
+        let notificationCenter = UNUserNotificationCenter.current()
+
+        // Remove existing notifications
+        notificationCenter.removeAllPendingNotificationRequests()
+
+        // Create a notification content
+        let content = UNMutableNotificationContent()
+        content.title = "Time for your microjournal entry!"
+        content.body = "Take a moment for contentment."
+        content.sound = UNNotificationSound.default
+
+        // Set the notification trigger based on user preferences
+        let trigger: UNNotificationTrigger
+        if isDaily {
+            // Schedule daily notifications at the selected time
+            let components = Calendar.current.dateComponents([.hour, .minute], from: selectedTime)
+            trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: true)
+        } else {
+            // Schedule weekly notifications at the selected time on the first day of the week (e.g., Sunday)
+            let weekdayComponent = Calendar.current.component(.weekday, from: selectedTime)
+            let components = DateComponents(hour: Calendar.current.component(.hour, from: selectedTime),
+                                            minute: Calendar.current.component(.minute, from: selectedTime),
+                                            weekday: weekdayComponent)
+            trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: true)
+        }
+
+        // Create a notification request
+        let request = UNNotificationRequest(identifier: "dailyReminder", content: content, trigger: trigger)
+
+        // Add the notification request to the notification center
+        notificationCenter.add(request) { (error) in
+            if let error = error {
+                print("Failed to schedule notification: \(error.localizedDescription)")
+            } else {
+                print("Notification scheduled successfully")
+            }
+        }
+    }
+
+    // Add a function to handle the user's notification preference and time
+    func setNotificationPreferences(isDaily: Bool, selectedTime: Date) {
+        UserDefaults.standard.set(isDaily, forKey: "isDailyNotification")
+        UserDefaults.standard.set(selectedTime, forKey: "notificationTime")
+        scheduleNotification(isDaily: isDaily, selectedTime: selectedTime)
+    }
+
+    // Add a function to show a time picker for notification time
+    func showTimePicker() {
+        let timePicker = UIDatePicker()
+        timePicker.datePickerMode = .time
+        
+        // Set the initial time of the picker to the existing schedule time, if available
+        if let notificationTime = UserDefaults.standard.object(forKey: "notificationTime") as? Date {
+            timePicker.date = notificationTime
+        }
+
+        let alertController = UIAlertController(title: "Select Notification Time", message: nil, preferredStyle: .actionSheet)
+        alertController.view.addSubview(timePicker)
+
+        let saveAction = UIAlertAction(title: "Save", style: .default) { [weak self] (_) in
+            guard let self = self else { return }
+            let selectedTime = timePicker.date
+            self.setNotificationPreferences(isDaily: self.isDailyNotification, selectedTime: selectedTime)
+        }
+        alertController.addAction(saveAction)
+
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+        alertController.addAction(cancelAction)
+
+        present(alertController, animated: true, completion: nil)
+    }
+    // Add an IBAction to handle the notification settings button
+    @IBAction func notificationSettingsButtonTapped(_ sender: Any) {
+        let alertController = UIAlertController(title: "Notification Settings", message: nil, preferredStyle: .actionSheet)
+
+        let dailyAction = UIAlertAction(title: "Daily", style: .default) { [weak self] (_) in
+            guard let self = self else { return }
+            self.isDailyNotification = true
+            self.showTimePicker()
+        }
+        alertController.addAction(dailyAction)
+
+        let weeklyAction = UIAlertAction(title: "Weekly", style: .default) { [weak self] (_) in
+            guard let self = self else { return }
+            self.isDailyNotification = false
+            self.showTimePicker()
+        }
+        alertController.addAction(weeklyAction)
+
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+        alertController.addAction(cancelAction)
+
+        present(alertController, animated: true, completion: nil)
+    }
+}
+  
+
+
