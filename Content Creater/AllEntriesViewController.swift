@@ -11,12 +11,12 @@ import UserNotifications
 import Photos
 
 class AllEntriesViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
-
+    
     var backgroundImage: UIImageView!
     var selectedImage: UIImage? // Track the selected image
     
-    var isDailyNotification: Bool = true // Add this property
-
+    //    var isDailyNotification: Bool = true // Add this property
+    
     
     let dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
@@ -32,7 +32,7 @@ class AllEntriesViewController: UIViewController, UIImagePickerControllerDelegat
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        	
+        
         tableView.separatorStyle = .singleLine
         tableView.separatorColor = UIColor.lightGray
         
@@ -40,7 +40,7 @@ class AllEntriesViewController: UIViewController, UIImagePickerControllerDelegat
         tableView.delegate = self
         
         // Register the cell class
-            tableView.register(UITableViewCell.self, forCellReuseIdentifier: "EntryCell")
+        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "EntryCell")
         
         fetchEntries()
         
@@ -55,8 +55,12 @@ class AllEntriesViewController: UIViewController, UIImagePickerControllerDelegat
         EntrySearch.layer.cornerRadius = 15
         EntrySearch.clipsToBounds = true
         
+        // Modify the selectBackgroundButton creation code to set background color and bring it to front
         let selectBackgroundButton = UIButton(type: .system)
-        selectBackgroundButton.setTitle("Select Background", for: .normal)
+        selectBackgroundButton.setTitle("Set Background", for: .normal) // Set the title of the button
+        selectBackgroundButton.tintColor = .white // Set non-background part to white
+        selectBackgroundButton.layer.zPosition = CGFloat.greatestFiniteMagnitude // Bring button to front
+        selectBackgroundButton.setImage(UIImage(named: "photo.artframe"), for: .normal)
         selectBackgroundButton.addTarget(self, action: #selector(selectBackgroundPhoto), for: .touchUpInside)
         view.addSubview(selectBackgroundButton)
 
@@ -64,8 +68,9 @@ class AllEntriesViewController: UIViewController, UIImagePickerControllerDelegat
         selectBackgroundButton.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
             selectBackgroundButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            selectBackgroundButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20)
+            selectBackgroundButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 30)
         ])
+
         
         // Initialize the UIImageView for the background image
         backgroundImage = UIImageView(frame: view.bounds)
@@ -80,19 +85,19 @@ class AllEntriesViewController: UIViewController, UIImagePickerControllerDelegat
             setBackgroundImage(defaultBackgroundImage)
         }
         
-        // Add a button to re-ask for photo library permissions
-          let permissionButton = UIButton(type: .system)
-          permissionButton.setTitle("Re-ask for Photo Permissions", for: .normal)
-          permissionButton.addTarget(self, action: #selector(requestPhotoLibraryPermissions), for: .touchUpInside)
-          view.addSubview(permissionButton)
-
-          // Set constraints for the button at the bottom of the view
-          permissionButton.translatesAutoresizingMaskIntoConstraints = false
-          NSLayoutConstraint.activate([
-              permissionButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-              permissionButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20)
-          ])
-
+        //        // Add a button to re-ask for photo library permissions
+        //          let permissionButton = UIButton(type: .system)
+        //          permissionButton.setTitle("Re-ask for Photo Permissions", for: .normal)
+        //          permissionButton.addTarget(self, action: #selector(requestPhotoLibraryPermissions), for: .touchUpInside)
+        //          view.addSubview(permissionButton)
+        
+        //          // Set constraints for the button at the bottom of the view
+        //          permissionButton.translatesAutoresizingMaskIntoConstraints = false
+        //          NSLayoutConstraint.activate([
+        //              permissionButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+        //              permissionButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20)
+        //          ])
+        
     }
     
     // Action method to request photo library permissions
@@ -117,7 +122,7 @@ class AllEntriesViewController: UIViewController, UIImagePickerControllerDelegat
         imagePickerController.sourceType = .photoLibrary
         present(imagePickerController, animated: true, completion: nil)
     }
-
+    
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         if let selectedImage = info[UIImagePickerController.InfoKey.originalImage] as? UIImage {
             // Check if an entry is selected
@@ -155,7 +160,7 @@ class AllEntriesViewController: UIViewController, UIImagePickerControllerDelegat
                 }
             }
         }
-
+        
         picker.dismiss(animated: true, completion: nil)
     }
     
@@ -178,16 +183,16 @@ class AllEntriesViewController: UIViewController, UIImagePickerControllerDelegat
         // Handle the back button tap here (e.g., pop the view controller)
         navigationController?.popViewController(animated: true)
     }
-        
+    
     
     func fetchEntries() {
         let fetchRequest: NSFetchRequest<JournalEntry> = JournalEntry.fetchRequest()
         let sortDescriptor = NSSortDescriptor(key: "timestamp", ascending: false)
         fetchRequest.sortDescriptors = [sortDescriptor]
-
+        
         do {
             self.items = try context.fetch(fetchRequest)
-
+            
             DispatchQueue.main.async {
                 self.tableView.reloadData()
             }
@@ -225,7 +230,7 @@ class AllEntriesViewController: UIViewController, UIImagePickerControllerDelegat
     //Change Entry
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let entry = items![indexPath.row]
-
+        
         let alert = UIAlertController(title: "Edit Entry", message: "Change this entry", preferredStyle: .alert)
         alert.addTextField { textField in
             textField.placeholder = "Body"
@@ -239,7 +244,7 @@ class AllEntriesViewController: UIViewController, UIImagePickerControllerDelegat
                 textField.text = dateFormatter.string(from: timestamp)
             }
         }
-
+        
         let imagePickerAction = UIAlertAction(title: "Change Photo", style: .default) { _ in
             let imagePickerController = UIImagePickerController()
             imagePickerController.delegate = self
@@ -247,24 +252,24 @@ class AllEntriesViewController: UIViewController, UIImagePickerControllerDelegat
             self.present(imagePickerController, animated: true, completion: nil)
         }
         alert.addAction(imagePickerAction)
-
+        
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
-
+        
         let saveButton = UIAlertAction(title: "Save", style: .default) { [weak self] _ in
             guard let self = self else { return }
-
+            
             if let bodyTextField = alert.textFields?.first,
                let timestampTextField = alert.textFields?.last,
                let body = bodyTextField.text,
                let timestampText = timestampTextField.text {
-
+                
                 let dateFormatter = DateFormatter()
                 dateFormatter.dateFormat = "yyyy-MM-dd"  // Adjust the format based on your timestamp format
-
+                
                 if let timestamp = dateFormatter.date(from: timestampText) {
                     entry.body = body
                     entry.timestamp = timestamp
-
+                    
                     do {
                         try self.context.save()
                         self.fetchEntries()
@@ -280,7 +285,7 @@ class AllEntriesViewController: UIViewController, UIImagePickerControllerDelegat
                 }
             }
         }
-
+        
         alert.addAction(saveButton)
         self.present(alert, animated: true, completion: nil)
     }
@@ -298,14 +303,14 @@ class AllEntriesViewController: UIViewController, UIImagePickerControllerDelegat
         returnLabel.font = UIFont.systemFont(ofSize: 20)
         returnLabel.textAlignment = .center
         returnLabel.textColor = UIColor.white
-
+        
         let stackView = UIStackView(arrangedSubviews: [helpLabel, returnLabel])
         stackView.axis = .vertical
         stackView.spacing = 10
-
+        
         let alertView = UIView()
         alertView.addSubview(stackView)
-
+        
         stackView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
             stackView.topAnchor.constraint(equalTo: alertView.topAnchor),
@@ -313,19 +318,19 @@ class AllEntriesViewController: UIViewController, UIImagePickerControllerDelegat
             stackView.trailingAnchor.constraint(equalTo: alertView.trailingAnchor),
             stackView.bottomAnchor.constraint(equalTo: alertView.bottomAnchor)
         ])
-
+        
         alertView.backgroundColor = UIColor(white: 0, alpha: 0.1)
         alertView.layer.cornerRadius = 10
-
+        
         view.addSubview(alertView)
-
+        
         alertView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            alertView.topAnchor.constraint(equalTo: tableView.topAnchor, constant: -80),
+            alertView.topAnchor.constraint(equalTo: tableView.topAnchor, constant: -240),
             alertView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             alertView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20)
         ])
-
+        
         // Optional: Add a timer to dismiss the view after a certain duration
         DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
             // Animate the fade-out
@@ -343,104 +348,104 @@ class AllEntriesViewController: UIViewController, UIImagePickerControllerDelegat
     
     @IBOutlet weak var EntrySearch: UISearchBar!
     
-    // Add a function to schedule notifications
-    func scheduleNotification(isDaily: Bool, selectedTime: Date) {
-        let notificationCenter = UNUserNotificationCenter.current()
-
-        // Remove existing notifications
-        notificationCenter.removeAllPendingNotificationRequests()
-
-        // Create a notification content
-        let content = UNMutableNotificationContent()
-        content.title = "Don't forget to write your microjournal entry!"
-        content.body = "Take a moment to record what made you happy or content."
-        content.sound = UNNotificationSound.default
-
-        // Set the notification trigger based on user preferences
-        let trigger: UNNotificationTrigger
-        if isDaily {
-            // Schedule daily notifications at the selected time
-            let components = Calendar.current.dateComponents([.hour, .minute], from: selectedTime)
-            trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: true)
-        } else {
-            // Schedule weekly notifications at the selected time on the first day of the week (e.g., Sunday)
-            let weekdayComponent = Calendar.current.component(.weekday, from: selectedTime)
-            let components = DateComponents(hour: Calendar.current.component(.hour, from: selectedTime),
-                                            minute: Calendar.current.component(.minute, from: selectedTime),
-                                            weekday: weekdayComponent)
-            trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: true)
-        }
-
-        // Create a notification request
-        let request = UNNotificationRequest(identifier: "dailyReminder", content: content, trigger: trigger)
-
-        // Add the notification request to the notification center
-        notificationCenter.add(request) { (error) in
-            if let error = error {
-                print("Failed to schedule notification: \(error.localizedDescription)")
-            } else {
-                print("Notification scheduled successfully")
-            }
-        }
-    }
-
-    // Add a function to handle the user's notification preference and time
-    func setNotificationPreferences(isDaily: Bool, selectedTime: Date) {
-        UserDefaults.standard.set(isDaily, forKey: "isDailyNotification")
-        UserDefaults.standard.set(selectedTime, forKey: "notificationTime")
-        scheduleNotification(isDaily: isDaily, selectedTime: selectedTime)
-    }
-
-    // Add a function to show a time picker for notification time
-    func showTimePicker() {
-        let timePicker = UIDatePicker()
-        timePicker.datePickerMode = .time
-        
-        // Set the initial time of the picker to the existing schedule time, if available
-        if let notificationTime = UserDefaults.standard.object(forKey: "notificationTime") as? Date {
-            timePicker.date = notificationTime
-        }
-
-        let alertController = UIAlertController(title: "Select Notification Time", message: nil, preferredStyle: .actionSheet)
-        alertController.view.addSubview(timePicker)
-
-        let saveAction = UIAlertAction(title: "Save", style: .default) { [weak self] (_) in
-            guard let self = self else { return }
-            let selectedTime = timePicker.date
-            self.setNotificationPreferences(isDaily: self.isDailyNotification, selectedTime: selectedTime)
-        }
-        alertController.addAction(saveAction)
-
-        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
-        alertController.addAction(cancelAction)
-
-        present(alertController, animated: true, completion: nil)
-    }
-    // Add an IBAction to handle the notification settings button
-    @IBAction func notificationSettingsButtonTapped(_ sender: Any) {
-        let alertController = UIAlertController(title: "Notification Settings", message: nil, preferredStyle: .actionSheet)
-
-        let dailyAction = UIAlertAction(title: "Daily", style: .default) { [weak self] (_) in
-            guard let self = self else { return }
-            self.isDailyNotification = true
-            self.showTimePicker()
-        }
-        alertController.addAction(dailyAction)
-
-        let weeklyAction = UIAlertAction(title: "Weekly", style: .default) { [weak self] (_) in
-            guard let self = self else { return }
-            self.isDailyNotification = false
-            self.showTimePicker()
-        }
-        alertController.addAction(weeklyAction)
-
-        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
-        alertController.addAction(cancelAction)
-
-        present(alertController, animated: true, completion: nil)
-    }
+    //    // Add a function to schedule notifications
+    //    func scheduleNotification(isDaily: Bool, selectedTime: Date) {
+    //        let notificationCenter = UNUserNotificationCenter.current()
+    //
+    //        // Remove existing notifications
+    //        notificationCenter.removeAllPendingNotificationRequests()
+    //
+    //        // Create a notification content
+    //        let content = UNMutableNotificationContent()
+    //        content.title = "Don't forget to write your microjournal entry!"
+    //        content.body = "Take a moment to record what made you happy or content."
+    //        content.sound = UNNotificationSound.default
+    //
+    //        // Set the notification trigger based on user preferences
+    //        let trigger: UNNotificationTrigger
+    //        if isDaily {
+    //            // Schedule daily notifications at the selected time
+    //            let components = Calendar.current.dateComponents([.hour, .minute], from: selectedTime)
+    //            trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: true)
+    //        } else {
+    //            // Schedule weekly notifications at the selected time on the first day of the week (e.g., Sunday)
+    //            let weekdayComponent = Calendar.current.component(.weekday, from: selectedTime)
+    //            let components = DateComponents(hour: Calendar.current.component(.hour, from: selectedTime),
+    //                                            minute: Calendar.current.component(.minute, from: selectedTime),
+    //                                            weekday: weekdayComponent)
+    //            trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: true)
+    //        }
+    //
+    //        // Create a notification request
+    //        let request = UNNotificationRequest(identifier: "dailyReminder", content: content, trigger: trigger)
+    //
+    //        // Add the notification request to the notification center
+    //        notificationCenter.add(request) { (error) in
+    //            if let error = error {
+    //                print("Failed to schedule notification: \(error.localizedDescription)")
+    //            } else {
+    //                print("Notification scheduled successfully")
+    //            }
+    //        }
+    //    }
+    //
+    //    // Add a function to handle the user's notification preference and time
+    //    func setNotificationPreferences(isDaily: Bool, selectedTime: Date) {
+    //        UserDefaults.standard.set(isDaily, forKey: "isDailyNotification")
+    //        UserDefaults.standard.set(selectedTime, forKey: "notificationTime")
+    //        scheduleNotification(isDaily: isDaily, selectedTime: selectedTime)
+    //    }
+    //
+    //    // Add a function to show a time picker for notification time
+    //    func showTimePicker() {
+    //        let timePicker = UIDatePicker()
+    //        timePicker.datePickerMode = .time
+    //
+    //        // Set the initial time of the picker to the existing schedule time, if available
+    //        if let notificationTime = UserDefaults.standard.object(forKey: "notificationTime") as? Date {
+    //            timePicker.date = notificationTime
+    //        }
+    //
+    //        let alertController = UIAlertController(title: "Select Notification Time", message: nil, preferredStyle: .actionSheet)
+    //        alertController.view.addSubview(timePicker)
+    //
+    //        let saveAction = UIAlertAction(title: "Save", style: .default) { [weak self] (_) in
+    //            guard let self = self else { return }
+    //            let selectedTime = timePicker.date
+    //            self.setNotificationPreferences(isDaily: self.isDailyNotification, selectedTime: selectedTime)
+    //        }
+    //        alertController.addAction(saveAction)
+    //
+    //        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+    //        alertController.addAction(cancelAction)
+    //
+    //        present(alertController, animated: true, completion: nil)
+    //    }
+    //    // Add an IBAction to handle the notification settings button
+    //    @IBAction func notificationSettingsButtonTapped(_ sender: Any) {
+    //        let alertController = UIAlertController(title: "Notification Settings", message: nil, preferredStyle: .actionSheet)
+    //
+    //        let dailyAction = UIAlertAction(title: "Daily", style: .default) { [weak self] (_) in
+    //            guard let self = self else { return }
+    //            self.isDailyNotification = true
+    //            self.showTimePicker()
+    //        }
+    //        alertController.addAction(dailyAction)
+    //
+    //        let weeklyAction = UIAlertAction(title: "Weekly", style: .default) { [weak self] (_) in
+    //            guard let self = self else { return }
+    //            self.isDailyNotification = false
+    //            self.showTimePicker()
+    //        }
+    //        alertController.addAction(weeklyAction)
+    //
+    //        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+    //        alertController.addAction(cancelAction)
+    //
+    //        present(alertController, animated: true, completion: nil)
+    //    }
+    //}
 }
-
 
 extension AllEntriesViewController: UITableViewDelegate, UITableViewDataSource {
     
