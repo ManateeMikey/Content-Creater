@@ -336,10 +336,12 @@ class AllEntriesViewController: UIViewController, UIImagePickerControllerDelegat
     @IBAction func Instructions(_ sender: Any) {
         // Display "Tap to Edit" and "Swipe left to Delete" messages using labels
         let helpLabel = UILabel()
-        helpLabel.text = "Tap to Edit Entries/Background, Swipe to Delete"
+        helpLabel.text = "Tap to Edit Entries/Entry Photo\nSwipe Left to Delete"
         helpLabel.font = UIFont.systemFont(ofSize: 20)
         helpLabel.textAlignment = .center
         helpLabel.textColor = UIColor.white
+        helpLabel.numberOfLines = 0 // Allow multiple lines
+        helpLabel.sizeToFit() // Adjust the size to fit the content
         
         let returnLabel = UILabel()
         returnLabel.text = "Tap Left Arrow to Exit"
