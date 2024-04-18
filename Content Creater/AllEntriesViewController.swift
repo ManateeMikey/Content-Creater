@@ -100,6 +100,7 @@ class AllEntriesViewController: UIViewController, UIImagePickerControllerDelegat
         
     }
     
+    
     // Action method to request photo library permissions
     @objc func requestPhotoLibraryPermissions() {
         PHPhotoLibrary.requestAuthorization { status in
@@ -116,47 +117,89 @@ class AllEntriesViewController: UIViewController, UIImagePickerControllerDelegat
         }
     }
     
+    func saveBackgroundPhoto(_ image: UIImage) {
+        if let imageData = image.jpegData(compressionQuality: 1.0) {
+            UserDefaults.standard.set(imageData, forKey: "backgroundPhoto")
+        }
+    }
+    
     @objc func selectBackgroundPhoto() {
         let imagePickerController = UIImagePickerController()
         imagePickerController.delegate = self
-        imagePickerController.sourceType = .photoLibrary
-        present(imagePickerController, animated: true, completion: nil)
+        
+        // Check if the app has permission to access the photo library
+        let status = PHPhotoLibrary.authorizationStatus()
+        switch status {
+        case .authorized:
+            // If permission is granted, present the image picker
+            imagePickerController.sourceType = .photoLibrary
+            present(imagePickerController, animated: true, completion: nil)
+            
+        case .notDetermined:
+            // If permission is not determined, request authorization
+            PHPhotoLibrary.requestAuthorization { [weak self] status in
+                DispatchQueue.main.async {
+                    if status == .authorized {
+                        // If permission is granted after requesting, present the image picker
+                        imagePickerController.sourceType = .photoLibrary
+                        self?.present(imagePickerController, animated: true, completion: nil)
+                    } else {
+                        // If permission is still not granted, you can handle it accordingly, such as showing a message to the user
+                        let permissionAlert = UIAlertController(title: "Permission Required", message: "Please grant access to your photo library in Settings to select a background photo.", preferredStyle: .alert)
+                        let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
+                        permissionAlert.addAction(okAction)
+                        self?.present(permissionAlert, animated: true, completion: nil)
+                    }
+                }
+            }
+            
+        default:
+            // If permission is denied or restricted, show an alert asking the user to grant access in settings
+            let permissionAlert = UIAlertController(title: "Permission Required", message: "Please grant access to your photo library in Settings to select a background photo.", preferredStyle: .alert)
+            let settingsAction = UIAlertAction(title: "Settings", style: .default) { _ in
+                if let settingsURL = URL(string: UIApplication.openSettingsURLString) {
+                    UIApplication.shared.open(settingsURL, options: [:], completionHandler: nil)
+                }
+            }
+            permissionAlert.addAction(settingsAction)
+            let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+            permissionAlert.addAction(cancelAction)
+            present(permissionAlert, animated: true, completion: nil)
+        }
     }
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         if let selectedImage = info[UIImagePickerController.InfoKey.originalImage] as? UIImage {
             // Check if an entry is selected
-            if let selectedIndexPath = tableView.indexPathForSelectedRow {
-                // Update the associated photo string for the selected entry
-                guard let items = items else {
-                    print("Items array is nil")
-                    return
-                }
-                guard selectedIndexPath.row < items.count else {
-                    print("Invalid indexPath")
-                    return
-                }
-                let entry = items[selectedIndexPath.row]
-                // Get the PHAsset for the selected image
-                if let asset = info[UIImagePickerController.InfoKey.phAsset] as? PHAsset {
-                    // Use the localIdentifier of the PHAsset as the photoLocalIdentifier
-                    entry.photoLocalIdentifier = asset.localIdentifier
-                    do {
-                        try context.save()
-                        print("Photo Updated")
-                        // Reload the specific row to reflect the changes
-                        tableView.reloadRows(at: [selectedIndexPath], with: .automatic)
-                    } catch {
-                        print("Unable to save changes")
-                    }
-                }
-            } else {
+            if tableView.indexPathForSelectedRow == nil {
                 // Save the selected photo as the background photo
-                // Get the PHAsset for the selected image
-                if let asset = info[UIImagePickerController.InfoKey.phAsset] as? PHAsset {
-                    // Use the localIdentifier of the PHAsset as the backgroundPhotoUUID
-                    UserDefaults.standard.set(asset.localIdentifier, forKey: "backgroundPhotoUUID")
-                    setBackgroundImage(selectedImage)
+                setBackgroundImage(selectedImage)
+                saveBackgroundPhoto(selectedImage)
+            } else {
+                // Change the photo for the selected entry
+                if let selectedIndexPath = tableView.indexPathForSelectedRow {
+                    guard let items = items else {
+                        print("Items array is nil")
+                        return
+                    }
+                    guard selectedIndexPath.row < items.count else {
+                        print("Invalid indexPath")
+                        return
+                    }
+                    let entry = items[selectedIndexPath.row]
+                    // Get the PHAsset for the selected image
+                    if let asset = info[UIImagePickerController.InfoKey.phAsset] as? PHAsset {
+                        // Use the localIdentifier of the PHAsset as the photoLocalIdentifier
+                        entry.photoLocalIdentifier = asset.localIdentifier
+                        do {
+                            try context.save()
+                            print("Photo Updated")
+                            // Reload the specific row to reflect the changes
+                            tableView.reloadRows(at: [selectedIndexPath], with: .automatic)
+                        } catch {
+                            print("Unable to save changes")
+                        }
+                    }
                 }
             }
         }
