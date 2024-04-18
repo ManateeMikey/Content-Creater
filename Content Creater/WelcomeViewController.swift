@@ -786,13 +786,13 @@ class WelcomeViewController: UIViewController, UITableViewDelegate, UITableViewD
         }
         alertController.addAction(dailyAction)
 
-        let weeklyAction = UIAlertAction(title: "Weekly", style: .default) { [weak self] (_) in
-            guard let self = self else { return }
-            self.isDailyNotification = false
-            self.showTimePicker()
-        }
-        alertController.addAction(weeklyAction)
-
+//        let weeklyAction = UIAlertAction(title: "Weekly", style: .default) { [weak self] (_) in
+//            guard let self = self else { return }
+//            self.isDailyNotification = false
+//            self.showTimePicker()
+//        }
+//        alertController.addAction(weeklyAction)
+//
         let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
         alertController.addAction(cancelAction)
 
