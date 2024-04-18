@@ -469,7 +469,9 @@ class WelcomeViewController: UIViewController, UITableViewDelegate, UITableViewD
         
         let pickPhotoAction = UIAlertAction(title: "Save With Photo", style: .default) { [weak self] _ in
             // Check if the app has permission to access the photo library
-            if PHPhotoLibrary.authorizationStatus() == .authorized {
+            let status = PHPhotoLibrary.authorizationStatus()
+            switch status {
+            case .authorized:
                 // If permission is granted, present the image picker
                 self?.presentImagePickerIfNeeded()
                 
@@ -485,8 +487,9 @@ class WelcomeViewController: UIViewController, UITableViewDelegate, UITableViewD
                     // Call the method to save the entry immediately with the selected photo's local identifier
                     self?.saveEntry(with: entryText, date: date, photoLocalIdentifier: localIdentifier)
                 }
-            } else {
-                // If permission is not granted, display an additional popup to ask for permission
+                
+            case .notDetermined:
+                // If permission is not determined, request authorization
                 PHPhotoLibrary.requestAuthorization { status in
                     DispatchQueue.main.async {
                         if status == .authorized {
@@ -506,14 +509,33 @@ class WelcomeViewController: UIViewController, UITableViewDelegate, UITableViewD
                                 self?.saveEntry(with: entryText, date: date, photoLocalIdentifier: localIdentifier)
                             }
                         } else {
-                            // If permission is still not granted, you can handle it accordingly, such as showing a message to the user
-                            let permissionAlert = UIAlertController(title: "Permission Required", message: "Please grant access to your photo library in Settings -> Content Creator to pick a photo. No one else, not even the app creator, will see or access any of your information.", preferredStyle: .alert)
-                            let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
-                            permissionAlert.addAction(okAction)
+                            // If permission is still not granted, show an alert asking the user to grant access in settings
+                            let permissionAlert = UIAlertController(title: "Permission Required", message: "Please grant access to your photo library in Settings to pick a photo.", preferredStyle: .alert)
+                            let settingsAction = UIAlertAction(title: "Settings", style: .default) { _ in
+                                if let settingsURL = URL(string: UIApplication.openSettingsURLString) {
+                                    UIApplication.shared.open(settingsURL, options: [:], completionHandler: nil)
+                                }
+                            }
+                            permissionAlert.addAction(settingsAction)
+                            let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+                            permissionAlert.addAction(cancelAction)
                             self?.present(permissionAlert, animated: true, completion: nil)
                         }
                     }
                 }
+                
+            default:
+                // If permission is denied or restricted, show an alert asking the user to grant access in settings
+                let permissionAlert = UIAlertController(title: "Permission Required", message: "Please grant access to your photo library in Settings to pick a photo.", preferredStyle: .alert)
+                let settingsAction = UIAlertAction(title: "Settings", style: .default) { _ in
+                    if let settingsURL = URL(string: UIApplication.openSettingsURLString) {
+                        UIApplication.shared.open(settingsURL, options: [:], completionHandler: nil)
+                    }
+                }
+                permissionAlert.addAction(settingsAction)
+                let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+                permissionAlert.addAction(cancelAction)
+                self?.present(permissionAlert, animated: true, completion: nil)
             }
         }
         
@@ -654,7 +676,7 @@ class WelcomeViewController: UIViewController, UITableViewDelegate, UITableViewD
                   }, completion: { _ in
                       // After fade-in animation completes, perform the fade-out animation
                       UIView.animate(withDuration: 3.0, delay: 4.0, animations: {
-                          cell.textLabel?.alpha = 0
+                          cell.textLabel?.alpha =	 0
                       }, completion: { _ in
                           // After fade-out animation completes, reset alpha and start fade-in animation again
                           cell.textLabel?.alpha = 1

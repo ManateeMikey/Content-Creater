@@ -23,7 +23,7 @@
 	</dict>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>This app needs access to your photo library to save photos with corresponding journal entries</string>
-    <key>NSPhotoLibraryUsageDescription</key>
-    <string>This app needs access to your photo library to display photos with corresponding journal entries</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>This app needs access to your photo library to display photos with corresponding journal entries</string>
 </dict>
 </plist>
