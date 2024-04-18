@@ -7,8 +7,22 @@
 
 import UIKit
 import CoreData
+import UserNotifications
+import Photos
 
-class AllEntriesViewController: UIViewController {
+class AllEntriesViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+    
+    var backgroundImage: UIImageView!
+    var selectedImage: UIImage? // Track the selected image
+    
+    //    var isDailyNotification: Bool = true // Add this property
+    
+    
+    let dateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter
+    }()
     
     @IBOutlet weak var tableView: UITableView!
     
@@ -19,11 +33,14 @@ class AllEntriesViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        tableView.separatorStyle = .singleLine
+        tableView.separatorColor = UIColor.lightGray
+        
         tableView.dataSource = self
         tableView.delegate = self
         
         // Register the cell class
-            tableView.register(UITableViewCell.self, forCellReuseIdentifier: "EntryCell")
+        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "EntryCell")
         
         fetchEntries()
         
@@ -33,16 +50,185 @@ class AllEntriesViewController: UIViewController {
         // Set rounded corners for the table view
         tableView.layer.cornerRadius = 15
         
+        // Set the delegate for the search bar
+        EntrySearch.delegate = self
+        EntrySearch.layer.cornerRadius = 15
+        EntrySearch.clipsToBounds = true
+        
+        // Modify the selectBackgroundButton creation code to set background color and bring it to front
+        let selectBackgroundButton = UIButton(type: .system)
+        selectBackgroundButton.setTitle("Set Background", for: .normal) // Set the title of the button
+        selectBackgroundButton.tintColor = .white // Set non-background part to white
+        selectBackgroundButton.layer.zPosition = CGFloat.greatestFiniteMagnitude // Bring button to front
+        selectBackgroundButton.setImage(UIImage(named: "photo.artframe"), for: .normal)
+        selectBackgroundButton.addTarget(self, action: #selector(selectBackgroundPhoto), for: .touchUpInside)
+        view.addSubview(selectBackgroundButton)
+
+        // Set constraints for the button at the middle-top
+        selectBackgroundButton.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            selectBackgroundButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            selectBackgroundButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 30)
+        ])
+
+        
+        // Initialize the UIImageView for the background image
+        backgroundImage = UIImageView(frame: view.bounds)
+        backgroundImage.contentMode = .scaleAspectFill
+        backgroundImage.clipsToBounds = true
+        view.insertSubview(backgroundImage, at: 0)
+        
+        // Load the selected image or the default background image
+        if let customImage = getCustomBackgroundImage() {
+            setBackgroundImage(customImage)
+        } else if let defaultBackgroundImage = UIImage(named: "HistoryBackground") {
+            setBackgroundImage(defaultBackgroundImage)
+        }
+        
+        //        // Add a button to re-ask for photo library permissions
+        //          let permissionButton = UIButton(type: .system)
+        //          permissionButton.setTitle("Re-ask for Photo Permissions", for: .normal)
+        //          permissionButton.addTarget(self, action: #selector(requestPhotoLibraryPermissions), for: .touchUpInside)
+        //          view.addSubview(permissionButton)
+        
+        //          // Set constraints for the button at the bottom of the view
+        //          permissionButton.translatesAutoresizingMaskIntoConstraints = false
+        //          NSLayoutConstraint.activate([
+        //              permissionButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+        //              permissionButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20)
+        //          ])
+        
     }
+    
+    
+    // Action method to request photo library permissions
+    @objc func requestPhotoLibraryPermissions() {
+        PHPhotoLibrary.requestAuthorization { status in
+            switch status {
+            case .authorized:
+                print("Photo library access granted")
+            case .denied, .restricted:
+                print("Photo library access denied")
+            case .notDetermined:
+                print("Photo library access not determined")
+            @unknown default:
+                fatalError("Unhandled case")
+            }
+        }
+    }
+    
+    func saveBackgroundPhoto(_ image: UIImage) {
+        if let imageData = image.jpegData(compressionQuality: 1.0) {
+            UserDefaults.standard.set(imageData, forKey: "backgroundPhoto")
+        }
+    }
+    
+    @objc func selectBackgroundPhoto() {
+        let imagePickerController = UIImagePickerController()
+        imagePickerController.delegate = self
+        
+        // Check if the app has permission to access the photo library
+        let status = PHPhotoLibrary.authorizationStatus()
+        switch status {
+        case .authorized:
+            // If permission is granted, present the image picker
+            imagePickerController.sourceType = .photoLibrary
+            present(imagePickerController, animated: true, completion: nil)
+            
+        case .notDetermined:
+            // If permission is not determined, request authorization
+            PHPhotoLibrary.requestAuthorization { [weak self] status in
+                DispatchQueue.main.async {
+                    if status == .authorized {
+                        // If permission is granted after requesting, present the image picker
+                        imagePickerController.sourceType = .photoLibrary
+                        self?.present(imagePickerController, animated: true, completion: nil)
+                    } else {
+                        // If permission is still not granted, you can handle it accordingly, such as showing a message to the user
+                        let permissionAlert = UIAlertController(title: "Permission Required", message: "Please grant access to your photo library in Settings to select a background photo.", preferredStyle: .alert)
+                        let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
+                        permissionAlert.addAction(okAction)
+                        self?.present(permissionAlert, animated: true, completion: nil)
+                    }
+                }
+            }
+            
+        default:
+            // If permission is denied or restricted, show an alert asking the user to grant access in settings
+            let permissionAlert = UIAlertController(title: "Permission Required", message: "Please grant access to your photo library in Settings to select a background photo.", preferredStyle: .alert)
+            let settingsAction = UIAlertAction(title: "Settings", style: .default) { _ in
+                if let settingsURL = URL(string: UIApplication.openSettingsURLString) {
+                    UIApplication.shared.open(settingsURL, options: [:], completionHandler: nil)
+                }
+            }
+            permissionAlert.addAction(settingsAction)
+            let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+            permissionAlert.addAction(cancelAction)
+            present(permissionAlert, animated: true, completion: nil)
+        }
+    }
+    
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        if let selectedImage = info[UIImagePickerController.InfoKey.originalImage] as? UIImage {
+            // Check if an entry is selected
+            if tableView.indexPathForSelectedRow == nil {
+                // Save the selected photo as the background photo
+                setBackgroundImage(selectedImage)
+                saveBackgroundPhoto(selectedImage)
+            } else {
+                // Change the photo for the selected entry
+                if let selectedIndexPath = tableView.indexPathForSelectedRow {
+                    guard let items = items else {
+                        print("Items array is nil")
+                        return
+                    }
+                    guard selectedIndexPath.row < items.count else {
+                        print("Invalid indexPath")
+                        return
+                    }
+                    let entry = items[selectedIndexPath.row]
+                    // Get the PHAsset for the selected image
+                    if let asset = info[UIImagePickerController.InfoKey.phAsset] as? PHAsset {
+                        // Use the localIdentifier of the PHAsset as the photoLocalIdentifier
+                        entry.photoLocalIdentifier = asset.localIdentifier
+                        do {
+                            try context.save()
+                            print("Photo Updated")
+                            // Reload the specific row to reflect the changes
+                            tableView.reloadRows(at: [selectedIndexPath], with: .automatic)
+                        } catch {
+                            print("Unable to save changes")
+                        }
+                    }
+                }
+            }
+        }
+        
+        picker.dismiss(animated: true, completion: nil)
+    }
+    
+    // Helper method to get the selected image from UserDefaults
+    private func getCustomBackgroundImage() -> UIImage? {
+        if let imageData = UserDefaults.standard.data(forKey: "backgroundPhoto"),
+           let customImage = UIImage(data: imageData) {
+            return customImage
+        }
+        return nil
+    }
+    
+    // Helper method to set the background image
+    private func setBackgroundImage(_ image: UIImage) {
+        backgroundImage.image = image
+    }
+    
     
     @objc func backButtonTapped() {
         // Handle the back button tap here (e.g., pop the view controller)
         navigationController?.popViewController(animated: true)
     }
-        
+    
     
     func fetchEntries() {
-        // Fetch data from Core Data and sort it in descending order by timestamp
         let fetchRequest: NSFetchRequest<JournalEntry> = JournalEntry.fetchRequest()
         let sortDescriptor = NSSortDescriptor(key: "timestamp", ascending: false)
         fetchRequest.sortDescriptors = [sortDescriptor]
@@ -54,7 +240,6 @@ class AllEntriesViewController: UIViewController {
                 self.tableView.reloadData()
             }
         } catch {
-            // Handle the error
             print("Unable to fetch entries")
         }
     }
@@ -87,65 +272,90 @@ class AllEntriesViewController: UIViewController {
     
     //Change Entry
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let entry = items![indexPath.row]
         
-        //Selected Entry
-        let entry = self.items![indexPath.row]
-        
-        //Create alert
         let alert = UIAlertController(title: "Edit Entry", message: "Change this entry", preferredStyle: .alert)
-        alert.addTextField()
-        
-        let textfield = alert.textFields![0]
-        textfield.text = entry.body
-        
-        //Configure button handler
-        let saveButton = UIAlertAction(title: "Save", style: .default) { (action) in
-            
-            //Get textfield for the alert
-            let textfield = alert.textFields![0]
-            
-            //Edit name property of person object
-            entry.body = textfield.text
-            
-            //Save the data
-            do {
-                try self.context.save()
+        alert.addTextField { textField in
+            textField.placeholder = "Body"
+            textField.text = entry.body
+        }
+        alert.addTextField { textField in
+            textField.placeholder = "Timestamp (yyyy-MM-dd)"
+            if let timestamp = entry.timestamp {
+                let dateFormatter = DateFormatter()
+                dateFormatter.dateFormat = "yyyy-MM-dd"
+                textField.text = dateFormatter.string(from: timestamp)
             }
-            catch {
-                print("Unable to change entry")
-            }
-            //Re-fetch the data
-            self.fetchEntries()
         }
         
-        //Add button
-        alert.addAction(saveButton)
+        let imagePickerAction = UIAlertAction(title: "Change Photo", style: .default) { _ in
+            let imagePickerController = UIImagePickerController()
+            imagePickerController.delegate = self
+            imagePickerController.sourceType = .photoLibrary
+            self.present(imagePickerController, animated: true, completion: nil)
+        }
+        alert.addAction(imagePickerAction)
         
-        //Show alert
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+        
+        let saveButton = UIAlertAction(title: "Save", style: .default) { [weak self] _ in
+            guard let self = self else { return }
+            
+            if let bodyTextField = alert.textFields?.first,
+               let timestampTextField = alert.textFields?.last,
+               let body = bodyTextField.text,
+               let timestampText = timestampTextField.text {
+                
+                let dateFormatter = DateFormatter()
+                dateFormatter.dateFormat = "yyyy-MM-dd"  // Adjust the format based on your timestamp format
+                
+                if let timestamp = dateFormatter.date(from: timestampText) {
+                    entry.body = body
+                    entry.timestamp = timestamp
+                    
+                    do {
+                        try self.context.save()
+                        self.fetchEntries()
+                    } catch {
+                        print("Unable to save changes")
+                    }
+                } else {
+                    // Invalid timestamp format, show an error alert
+                    let errorAlert = UIAlertController(title: "Invalid Date Format", message: "Please enter a valid date in the format 'yyyy-MM-dd'", preferredStyle: .alert)
+                    let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
+                    errorAlert.addAction(okAction)
+                    self.present(errorAlert, animated: true, completion: nil)
+                }
+            }
+        }
+        
+        alert.addAction(saveButton)
         self.present(alert, animated: true, completion: nil)
     }
     
     @IBAction func Instructions(_ sender: Any) {
         // Display "Tap to Edit" and "Swipe left to Delete" messages using labels
         let helpLabel = UILabel()
-        helpLabel.text = "Tap to Edit, Swipe to Delete"
+        helpLabel.text = "Tap to Edit Entries/Entry Photo\nSwipe Left to Delete"
         helpLabel.font = UIFont.systemFont(ofSize: 20)
         helpLabel.textAlignment = .center
         helpLabel.textColor = UIColor.white
+        helpLabel.numberOfLines = 0 // Allow multiple lines
+        helpLabel.sizeToFit() // Adjust the size to fit the content
         
         let returnLabel = UILabel()
-        returnLabel.text = "Tap Arrow to Exit"
+        returnLabel.text = "Tap Left Arrow to Exit"
         returnLabel.font = UIFont.systemFont(ofSize: 20)
         returnLabel.textAlignment = .center
         returnLabel.textColor = UIColor.white
-
+        
         let stackView = UIStackView(arrangedSubviews: [helpLabel, returnLabel])
         stackView.axis = .vertical
         stackView.spacing = 10
-
+        
         let alertView = UIView()
         alertView.addSubview(stackView)
-
+        
         stackView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
             stackView.topAnchor.constraint(equalTo: alertView.topAnchor),
@@ -153,19 +363,19 @@ class AllEntriesViewController: UIViewController {
             stackView.trailingAnchor.constraint(equalTo: alertView.trailingAnchor),
             stackView.bottomAnchor.constraint(equalTo: alertView.bottomAnchor)
         ])
-
+        
         alertView.backgroundColor = UIColor(white: 0, alpha: 0.1)
         alertView.layer.cornerRadius = 10
-
+        
         view.addSubview(alertView)
-
+        
         alertView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            alertView.topAnchor.constraint(equalTo: tableView.topAnchor, constant: -80),
+            alertView.topAnchor.constraint(equalTo: tableView.topAnchor, constant: -240),
             alertView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             alertView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20)
         ])
-
+        
         // Optional: Add a timer to dismiss the view after a certain duration
         DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
             // Animate the fade-out
@@ -180,6 +390,106 @@ class AllEntriesViewController: UIViewController {
     @IBAction func BackButton(_ sender: Any) {
         dismiss(animated: true, completion: nil)
     }
+    
+    @IBOutlet weak var EntrySearch: UISearchBar!
+    
+    //    // Add a function to schedule notifications
+    //    func scheduleNotification(isDaily: Bool, selectedTime: Date) {
+    //        let notificationCenter = UNUserNotificationCenter.current()
+    //
+    //        // Remove existing notifications
+    //        notificationCenter.removeAllPendingNotificationRequests()
+    //
+    //        // Create a notification content
+    //        let content = UNMutableNotificationContent()
+    //        content.title = "Don't forget to write your microjournal entry!"
+    //        content.body = "Take a moment to record what made you happy or content."
+    //        content.sound = UNNotificationSound.default
+    //
+    //        // Set the notification trigger based on user preferences
+    //        let trigger: UNNotificationTrigger
+    //        if isDaily {
+    //            // Schedule daily notifications at the selected time
+    //            let components = Calendar.current.dateComponents([.hour, .minute], from: selectedTime)
+    //            trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: true)
+    //        } else {
+    //            // Schedule weekly notifications at the selected time on the first day of the week (e.g., Sunday)
+    //            let weekdayComponent = Calendar.current.component(.weekday, from: selectedTime)
+    //            let components = DateComponents(hour: Calendar.current.component(.hour, from: selectedTime),
+    //                                            minute: Calendar.current.component(.minute, from: selectedTime),
+    //                                            weekday: weekdayComponent)
+    //            trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: true)
+    //        }
+    //
+    //        // Create a notification request
+    //        let request = UNNotificationRequest(identifier: "dailyReminder", content: content, trigger: trigger)
+    //
+    //        // Add the notification request to the notification center
+    //        notificationCenter.add(request) { (error) in
+    //            if let error = error {
+    //                print("Failed to schedule notification: \(error.localizedDescription)")
+    //            } else {
+    //                print("Notification scheduled successfully")
+    //            }
+    //        }
+    //    }
+    //
+    //    // Add a function to handle the user's notification preference and time
+    //    func setNotificationPreferences(isDaily: Bool, selectedTime: Date) {
+    //        UserDefaults.standard.set(isDaily, forKey: "isDailyNotification")
+    //        UserDefaults.standard.set(selectedTime, forKey: "notificationTime")
+    //        scheduleNotification(isDaily: isDaily, selectedTime: selectedTime)
+    //    }
+    //
+    //    // Add a function to show a time picker for notification time
+    //    func showTimePicker() {
+    //        let timePicker = UIDatePicker()
+    //        timePicker.datePickerMode = .time
+    //
+    //        // Set the initial time of the picker to the existing schedule time, if available
+    //        if let notificationTime = UserDefaults.standard.object(forKey: "notificationTime") as? Date {
+    //            timePicker.date = notificationTime
+    //        }
+    //
+    //        let alertController = UIAlertController(title: "Select Notification Time", message: nil, preferredStyle: .actionSheet)
+    //        alertController.view.addSubview(timePicker)
+    //
+    //        let saveAction = UIAlertAction(title: "Save", style: .default) { [weak self] (_) in
+    //            guard let self = self else { return }
+    //            let selectedTime = timePicker.date
+    //            self.setNotificationPreferences(isDaily: self.isDailyNotification, selectedTime: selectedTime)
+    //        }
+    //        alertController.addAction(saveAction)
+    //
+    //        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+    //        alertController.addAction(cancelAction)
+    //
+    //        present(alertController, animated: true, completion: nil)
+    //    }
+    //    // Add an IBAction to handle the notification settings button
+    //    @IBAction func notificationSettingsButtonTapped(_ sender: Any) {
+    //        let alertController = UIAlertController(title: "Notification Settings", message: nil, preferredStyle: .actionSheet)
+    //
+    //        let dailyAction = UIAlertAction(title: "Daily", style: .default) { [weak self] (_) in
+    //            guard let self = self else { return }
+    //            self.isDailyNotification = true
+    //            self.showTimePicker()
+    //        }
+    //        alertController.addAction(dailyAction)
+    //
+    //        let weeklyAction = UIAlertAction(title: "Weekly", style: .default) { [weak self] (_) in
+    //            guard let self = self else { return }
+    //            self.isDailyNotification = false
+    //            self.showTimePicker()
+    //        }
+    //        alertController.addAction(weeklyAction)
+    //
+    //        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+    //        alertController.addAction(cancelAction)
+    //
+    //        present(alertController, animated: true, completion: nil)
+    //    }
+    //}
 }
 
 extension AllEntriesViewController: UITableViewDelegate, UITableViewDataSource {
@@ -192,36 +502,27 @@ extension AllEntriesViewController: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
-        let cell = tableView.dequeueReusableCell(withIdentifier: "EntryCell", for:indexPath)
-        
-        // Set the background color of the cell and the label to clear
+        let cell = tableView.dequeueReusableCell(withIdentifier: "EntryCell", for: indexPath)
+
         cell.backgroundColor = .clear
         cell.textLabel?.backgroundColor = .clear
 
-        
-        //TODO: Get entries from array and set the label
-        let journalEntry  = self.items![indexPath.row]
-        cell.textLabel?.text = journalEntry.body
-//        let dateFormatter = DateFormatter()
-//        dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
-        
-        cell.textLabel?.text = journalEntry.body
+        let journalEntry = self.items![indexPath.row]
+
+        // Use the dateFormatter to format the timestamp without hours, minutes, and seconds
+//        let formattedTimestamp = dateFormatter.string(from: journalEntry.timestamp!)
+
+//        cell.textLabel?.text = "\(formattedTimestamp)\n\n\(journalEntry.body ?? "")"
+        cell.textLabel?.text = "\(journalEntry.body ?? "")"
         cell.textLabel?.textColor = UIColor(hex: 0xffffff)
-        cell.textLabel?.font = UIFont.systemFont(ofSize: 20) // Adjust the font size as needed
-        //cell.textLabel?.font = UIFont.systemFont(ofSize: 18, weight: .heavy)
-        //cell.textLabel?.text = dateFormatter.string(from: journalEntry.timestamp!)
-        
+        cell.textLabel?.font = UIFont.systemFont(ofSize: 20)
         cell.textLabel?.numberOfLines = 0
         
-        if indexPath.row == 0 {
-            cell.alpha = 0
-            UIView.animate(withDuration: 1.0) {
-                cell.alpha = 1
-            }
-        }
+        // Align the timestamp line to the center
+        cell.textLabel?.textAlignment = .center
+        
         return cell
     }
-        
 }
 
 
@@ -237,4 +538,40 @@ extension UIColor {
 }
 
 
+extension AllEntriesViewController: UISearchBarDelegate {
     
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        filterContentForSearchText(searchText)
+    }
+
+    func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
+        searchBar.text = nil
+        searchBar.resignFirstResponder()
+        tableView.reloadData()
+    }
+    
+    // Helper method to filter entries based on search text
+    func filterContentForSearchText(_ searchText: String) {
+        if searchText.isEmpty {
+            // If search text is empty, display all entries
+            fetchEntries()
+        } else {
+            // Filter entries based on search text
+            let fetchRequest: NSFetchRequest<JournalEntry> = JournalEntry.fetchRequest()
+            let predicate = NSPredicate(format: "body CONTAINS[c] %@", searchText)
+            fetchRequest.predicate = predicate
+            let sortDescriptor = NSSortDescriptor(key: "timestamp", ascending: false)
+            fetchRequest.sortDescriptors = [sortDescriptor]
+
+            do {
+                self.items = try context.fetch(fetchRequest)
+
+                DispatchQueue.main.async {
+                    self.tableView.reloadData()
+                }
+            } catch {
+                print("Unable to fetch filtered entries")
+            }
+        }
+    }
+}

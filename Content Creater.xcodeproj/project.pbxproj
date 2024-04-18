@@ -8,14 +8,12 @@
 
 /* Begin PBXBuildFile section */
 		CD6276922B2E53E000C4BD29 /* Entries.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = CD6276902B2E53E000C4BD29 /* Entries.xcdatamodeld */; };
+		CDB7AE662BA74A88001EAD7B /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CDB7AE652BA74A88001EAD7B /* StoreKit.framework */; };
 		CDC12F9F2B2E447000522CC5 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDC12F9E2B2E447000522CC5 /* AppDelegate.swift */; };
 		CDC12FA12B2E447000522CC5 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDC12FA02B2E447000522CC5 /* SceneDelegate.swift */; };
 		CDC12FA62B2E447000522CC5 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = CDC12FA42B2E447000522CC5 /* Main.storyboard */; };
 		CDC12FA82B2E447100522CC5 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CDC12FA72B2E447100522CC5 /* Assets.xcassets */; };
 		CDC12FAB2B2E447100522CC5 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = CDC12FA92B2E447100522CC5 /* LaunchScreen.storyboard */; };
-		CDC12FB62B2E447100522CC5 /* Content_CreaterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDC12FB52B2E447100522CC5 /* Content_CreaterTests.swift */; };
-		CDC12FC02B2E447100522CC5 /* Content_CreaterUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDC12FBF2B2E447100522CC5 /* Content_CreaterUITests.swift */; };
-		CDC12FC22B2E447100522CC5 /* Content_CreaterUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDC12FC12B2E447100522CC5 /* Content_CreaterUITestsLaunchTests.swift */; };
 		CDC12FDC2B2E477800522CC5 /* WelcomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDC12FDB2B2E477800522CC5 /* WelcomeViewController.swift */; };
 		CDC12FDE2B2E47BD00522CC5 /* AllEntriesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDC12FDD2B2E47BD00522CC5 /* AllEntriesViewController.swift */; };
 /* End PBXBuildFile section */
@@ -38,7 +36,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		CD09E4B22BB0890000ECAA9B /* Content Creater.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; name = "Content Creater.storekit"; path = "Content Creater/Content Creater.storekit"; sourceTree = "<group>"; };
 		CD6276912B2E53E000C4BD29 /* Entries.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Entries.xcdatamodel; sourceTree = "<group>"; };
+		CDB7AE652BA74A88001EAD7B /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		CDC12F9B2B2E447000522CC5 /* Content Creater.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Content Creater.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		CDC12F9E2B2E447000522CC5 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		CDC12FA02B2E447000522CC5 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -47,10 +47,7 @@
 		CDC12FAA2B2E447100522CC5 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		CDC12FAC2B2E447100522CC5 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		CDC12FB12B2E447100522CC5 /* Content CreaterTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Content CreaterTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		CDC12FB52B2E447100522CC5 /* Content_CreaterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Content_CreaterTests.swift; sourceTree = "<group>"; };
 		CDC12FBB2B2E447100522CC5 /* Content CreaterUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Content CreaterUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		CDC12FBF2B2E447100522CC5 /* Content_CreaterUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Content_CreaterUITests.swift; sourceTree = "<group>"; };
-		CDC12FC12B2E447100522CC5 /* Content_CreaterUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Content_CreaterUITestsLaunchTests.swift; sourceTree = "<group>"; };
 		CDC12FDB2B2E477800522CC5 /* WelcomeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeViewController.swift; sourceTree = "<group>"; };
 		CDC12FDD2B2E47BD00522CC5 /* AllEntriesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllEntriesViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -60,6 +57,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CDB7AE662BA74A88001EAD7B /* StoreKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -80,14 +78,22 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		CDB7AE642BA74A88001EAD7B /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				CDB7AE652BA74A88001EAD7B /* StoreKit.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		CDC12F922B2E447000522CC5 = {
 			isa = PBXGroup;
 			children = (
+				CD09E4B22BB0890000ECAA9B /* Content Creater.storekit */,
 				CDC12FCF2B2E448E00522CC5 /* DataModel */,
 				CDC12F9D2B2E447000522CC5 /* Content Creater */,
-				CDC12FB42B2E447100522CC5 /* Content CreaterTests */,
-				CDC12FBE2B2E447100522CC5 /* Content CreaterUITests */,
 				CDC12F9C2B2E447000522CC5 /* Products */,
+				CDB7AE642BA74A88001EAD7B /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -117,23 +123,6 @@
 			path = "Content Creater";
 			sourceTree = "<group>";
 		};
-		CDC12FB42B2E447100522CC5 /* Content CreaterTests */ = {
-			isa = PBXGroup;
-			children = (
-				CDC12FB52B2E447100522CC5 /* Content_CreaterTests.swift */,
-			);
-			path = "Content CreaterTests";
-			sourceTree = "<group>";
-		};
-		CDC12FBE2B2E447100522CC5 /* Content CreaterUITests */ = {
-			isa = PBXGroup;
-			children = (
-				CDC12FBF2B2E447100522CC5 /* Content_CreaterUITests.swift */,
-				CDC12FC12B2E447100522CC5 /* Content_CreaterUITestsLaunchTests.swift */,
-			);
-			path = "Content CreaterUITests";
-			sourceTree = "<group>";
-		};
 		CDC12FCF2B2E448E00522CC5 /* DataModel */ = {
 			isa = PBXGroup;
 			children = (
@@ -157,6 +146,8 @@
 			dependencies = (
 			);
 			name = "Content Creater";
+			packageProductDependencies = (
+			);
 			productName = "Content Creater";
 			productReference = CDC12F9B2B2E447000522CC5 /* Content Creater.app */;
 			productType = "com.apple.product-type.application";
@@ -229,6 +220,8 @@
 				Base,
 			);
 			mainGroup = CDC12F922B2E447000522CC5;
+			packageReferences = (
+			);
 			productRefGroup = CDC12F9C2B2E447000522CC5 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -284,7 +277,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CDC12FB62B2E447100522CC5 /* Content_CreaterTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -292,8 +284,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CDC12FC02B2E447100522CC5 /* Content_CreaterUITests.swift in Sources */,
-				CDC12FC22B2E447100522CC5 /* Content_CreaterUITestsLaunchTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -470,7 +460,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.22;
 				PRODUCT_BUNDLE_IDENTIFIER = "analyticai.ca-michael.Content-Creater";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -498,7 +488,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.22;
 				PRODUCT_BUNDLE_IDENTIFIER = "analyticai.ca-michael.Content-Creater";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
